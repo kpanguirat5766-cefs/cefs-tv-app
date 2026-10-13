@@ -239,7 +239,7 @@ footer{margin-top:48px;color:var(--muted);font-size:14px;border-top:1px solid va
       </div>
       <button class="unmute" id="unmute" type="button" hidden>🔊 Activer le son</button>
       <div class="bars" aria-hidden="true"><i style="background:var(--c-priere)"></i><i style="background:var(--c-ens)"></i><i style="background:var(--c-form)"></i><i style="background:var(--c-culte)"></i><i style="background:var(--c-jeun)"></i><i style="background:var(--c-radio)"></i></div>
-      <div class="lower" id="lower"><div class="tag">EN DIRECT</div><div class="txt"><b id="lT">CEFS TV</b><small id="lH">Avec l'apôtre Guirat KPAN</small></div></div>
+      <div class="lower" id="lower"><div class="tag">EN DIRECT</div><div class="txt"><b id="lT">CEFS TV</b><small id="lH">Apôtre Guirat Kpan</small></div></div>
     </div>
     <aside class="side">
       <div class="onair"><span class="dot" id="dot"></span><span id="nowLbl">À l'antenne</span></div>
@@ -387,6 +387,7 @@ const DEFAULT = {"v": 2, "loop": true, "videos": [{"id": "v11", "title": "Béné
 const IN_APP = /CEFSTV\//.test(navigator.userAgent);
 let muted = !IN_APP;
 const REPO = "kpanguirat5766-cefs/cefs-tv-app", DATA_PATH = "docs/data/tv.json";
+const SIGN = "Apôtre Guirat Kpan";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -472,17 +473,17 @@ function renderNow(){
   if(L.cur){
     $("nowLbl").textContent = L.pass ? "À l'antenne · rediffusion" : "À l'antenne maintenant"; $("dot").hidden=false;
     $("nowTitle").textContent = L.cur.title;
-    $("nowMeta").textContent = `${fmtT(L.start)} – ${fmtT(L.end)}`;
+    $("nowMeta").textContent = `${SIGN} · ${fmtT(L.start)} – ${fmtT(L.end)}`;
     $("nowBar").style.width = Math.min(100, L.off/(L.end-L.start)*100)+"%";
   } else {
     $("nowLbl").textContent="Hors antenne"; $("dot").hidden=true;
     $("nowTitle").textContent="Fin des programmes"; $("nowMeta").textContent="La vidéothèque reste ouverte."; $("nowBar").style.width="0";
   }
   const n = upcoming(day,s);
-  if(n){ $("nextTitle").textContent=n.it.title; $("nextMeta").textContent=`${n.d===day?"Aujourd'hui":DAYS[n.d]} à ${fmtT(n.at)} · ${fmtDur(n.it.dur)}`; }
+  if(n){ $("nextTitle").textContent=n.it.title; $("nextMeta").textContent=`${SIGN} · ${n.d===day?"aujourd'hui":DAYS[n.d].toLowerCase()} à ${fmtT(n.at)}`; }
   else { $("nextTitle").textContent="—"; $("nextMeta").textContent=""; }
   $("clock").textContent = `${DAYS[day]} ${fmtT(s)} · heure d'Abidjan`;
-  if(!watching){ $("lT").textContent = L.cur ? L.cur.title : "CEFS TV"; $("lH").textContent = L.cur ? `Jusqu'à ${fmtT(L.end)}` : "Avec l'apôtre Guirat KPAN"; }
+  if(!watching){ $("lT").textContent = L.cur ? L.cur.title : "CEFS TV"; $("lH").textContent = SIGN; }
   if(watching && !$("carton").hidden && L.cur) $("cBar").style.width = Math.min(100, L.off/(L.end-L.start)*100)+"%";
 }
 
@@ -503,7 +504,7 @@ function tune(){
   $("ident").hidden = true;
   if(L.cur){
     const v = L.cur.video && vid(L.cur.video), key = L.cur.id+"|"+L.start;
-    $("lT").textContent = L.cur.title; $("lH").textContent = `${fmtT(L.start)} – ${fmtT(L.end)}`;
+    $("lT").textContent = L.cur.title; $("lH").textContent = `${SIGN} · ${fmtT(L.start)} – ${fmtT(L.end)}`;
     if(v && v.src==="youtube"){
       showLayer("yt");
       getMainPlayer().then(p=>{
@@ -521,7 +522,7 @@ function tune(){
       onItem = null; showLayer("carton");
       $("cK").textContent = L.pass ? "Rediffusion en cours" : "En cours";
       $("cT").textContent = L.cur.title;
-      $("cH").textContent = `${L.cur.host?L.cur.host+" · ":""}jusqu'à ${fmtT(L.end)}`;
+      $("cH").textContent = `${SIGN} · jusqu'à ${fmtT(L.end)}`;
       $("cBar").style.width = Math.min(100, L.off/(L.end-L.start)*100)+"%";
     }
     tuneT = setTimeout(tune, Math.max(500, (L.end - s)*1000 + 300));
@@ -567,7 +568,7 @@ function renderGrid(){
   let html = p.items.map((x,i)=>{
     const live = L.cur && L.idx===i, late = x.s >= DAY, v = x.video && vid(x.video);
     const t = live && L.pass ? `${fmtT(L.start)}–${fmtT(L.end)}<em>prévu ${fmtT(x.s)}</em>` : `${fmtT(x.s)}–${fmtT(x.e)}<em>${fmtDur(x.dur)}</em>`;
-    return `<div class="slot${live?" live":""}${late?" late":""}"><time>${t}</time><div style="min-width:0"><b>${esc(x.title)}${live?`<span class="livepill">${L.pass?"REDIFFUSION":"EN DIRECT"}</span>`:""}</b>${late?`<small>après minuit, non diffusée</small>`:""}</div></div>`;
+    return `<div class="slot${live?" live":""}${late?" late":""}"><time>${t}</time><div style="min-width:0"><b>${esc(x.title)}${live?`<span class="livepill">${L.pass?"REDIFFUSION":"EN DIRECT"}</span>`:""}</b><small>${SIGN}${late?" · après minuit, non diffusée":""}</small></div></div>`;
   }).join("");
   const end = p.s0 + p.total;
   if(p.loop && end < DAY) html += `<div class="slot loop"><time>${fmtT(end)}–00:00</time><div><b>Rediffusion de la journée en boucle</b><small>Les émissions reprennent dans le même ordre jusqu'à minuit.</small></div></div>`;
@@ -584,7 +585,7 @@ function renderVideos(){
   if(!list.length){ $("vgrid").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>Aucune vidéo ${filter} pour l'instant</b>Essayez le filtre « Toutes ».</div>`; return; }
   $("vgrid").innerHTML = list.map(v=>{
     const thumb = v.src==="youtube" ? `<img src="https://i.ytimg.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="" loading="lazy">` : `<span class="mark">CEFS TV</span>`;
-    return `<button class="vcard" type="button" data-play="${esc(v.id)}"><div class="thumb">${thumb}${PLAY}<span class="badge">${lenOf(v)==="courte"?"Courte":"Longue"}</span>${v.dur?`<span class="badge b">${fmtClip(v.dur)}</span>`:""}</div><b>${esc(v.title)}</b></button>`;
+    return `<button class="vcard" type="button" data-play="${esc(v.id)}"><div class="thumb">${thumb}${PLAY}<span class="badge">${lenOf(v)==="courte"?"Courte":"Longue"}</span>${v.dur?`<span class="badge b">${fmtClip(v.dur)}</span>`:""}</div><b>${esc(v.title)}</b><small>${SIGN}</small></button>`;
   }).join("");
 }
 
@@ -595,7 +596,7 @@ $("filters").addEventListener("click",e=>{ const b=e.target.closest("[data-f]");
 $("vgrid").addEventListener("click",e=>{
   const b=e.target.closest("[data-play]"); if(!b) return; const v=vid(b.dataset.play); if(!v) return;
   if(watching){ try{ ytMain && ytMain.pauseVideo(); }catch(_){} tv.pause(); }
-  $("pTitle").textContent=v.title; $("pDesc").textContent=v.desc||v.cat||"";
+  $("pTitle").textContent=v.title; $("pDesc").textContent=SIGN;
   $("pFrame").innerHTML = v.src==="youtube"
     ? `<iframe src="https://www.youtube.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen title="${esc(v.title)}"></iframe>`
     : `<video src="${esc(v.url)}" controls autoplay playsinline></video>`;
