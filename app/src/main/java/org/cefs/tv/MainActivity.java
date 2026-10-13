@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setSupportMultipleWindows(false);
-        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.2");
+        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.3");
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
@@ -84,9 +84,29 @@ public class MainActivity extends Activity {
             web.restoreState(savedInstanceState);
             hideSplash();
         } else {
-            web.loadUrl(getString(R.string.cefs_url));
+            web.loadUrl(startUrl(getIntent()));
             // Filet de sécurité : l'écran d'accueil ne reste jamais bloqué.
             splash.postDelayed(this::hideSplash, SPLASH_MAX_MS);
+        }
+    }
+
+    /** Adresse à ouvrir : le lien partagé reçu, sinon la chaîne. */
+    private String startUrl(Intent intent) {
+        String home = getString(R.string.cefs_url);
+        if (intent == null || intent.getData() == null) return home;
+        Uri u = intent.getData();
+        if ("cefstv".equals(u.getScheme())) return home;
+        if ("https".equals(u.getScheme()) && isInternal(u)) return u.toString();
+        return home;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && intent.getData() != null) {
+            if (customView != null) exitFullscreen();
+            web.loadUrl(startUrl(intent));
         }
     }
 
