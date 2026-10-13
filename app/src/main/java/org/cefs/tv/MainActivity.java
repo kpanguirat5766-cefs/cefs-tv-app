@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -39,6 +40,8 @@ public class MainActivity extends Activity {
     private boolean splashHidden = false;
     private boolean mainFrameFailed = false;
     private long lastBackPress = 0;
+    private static final int FILE_REQUEST = 42;
+    private ValueCallback<Uri[]> filePathCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +63,7 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setSupportMultipleWindows(false);
-        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.0");
+        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.1");
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
@@ -168,6 +171,42 @@ public class MainActivity extends Activity {
         public void onHideCustomView() {
             exitFullscreen();
         }
+
+        // Bouton « Choisir un fichier » des pages : ouvre la galerie ou les fichiers du téléphone.
+        @Override
+        public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
+                                         FileChooserParams params) {
+            if (filePathCallback != null) filePathCallback.onReceiveValue(null);
+            filePathCallback = callback;
+            Intent pick;
+            try {
+                pick = params.createIntent();
+            } catch (Exception e) {
+                pick = new Intent(Intent.ACTION_GET_CONTENT);
+                pick.setType("*/*");
+            }
+            pick.addCategory(Intent.CATEGORY_OPENABLE);
+            try {
+                startActivityForResult(Intent.createChooser(pick, "Choisir une vidéo"), FILE_REQUEST);
+            } catch (ActivityNotFoundException e) {
+                filePathCallback = null;
+                Toast.makeText(MainActivity.this, "Aucune application pour choisir un fichier", Toast.LENGTH_LONG).show();
+                return false;
+            }
+            return true;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FILE_REQUEST) {
+            if (filePathCallback != null) {
+                filePathCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+                filePathCallback = null;
+            }
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void exitFullscreen() {
