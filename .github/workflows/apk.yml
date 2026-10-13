@@ -3,6 +3,8 @@ name: Construire l'APK CEFS TV
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
   workflow_dispatch:
     inputs:
       url:

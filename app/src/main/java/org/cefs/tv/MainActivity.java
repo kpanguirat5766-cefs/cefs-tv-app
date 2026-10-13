@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setSupportMultipleWindows(false);
-        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.1");
+        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.2");
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
@@ -111,7 +111,8 @@ public class MainActivity extends Activity {
     private static boolean isInternal(Uri uri) {
         String host = uri.getHost();
         if (host == null) return true;
-        return host.equals("claude.ai") || host.endsWith(".claude.ai")
+        return host.equals("kpanguirat5766-cefs.github.io")
+                || host.equals("claude.ai") || host.endsWith(".claude.ai")
                 || host.endsWith("claudeusercontent.com")
                 || host.endsWith("anthropic.com");
     }

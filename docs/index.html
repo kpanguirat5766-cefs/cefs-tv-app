@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CEFS TV</title>
+<meta name="description" content="CEFS TV, la chaîne de l'apôtre Guirat KPAN : prière, enseignements de la Parole et cultes, en continu.">
+<meta name="theme-color" content="#1A1230">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+
+/* Layout : régie de télévision — un « écran studio » sombre en tête, puis la grille enchaînée et la vidéothèque sur fond clair. */
+:root{
+  --bg:#F4F2F8; --surface:#FFFFFF; --ink:#1D1631; --muted:#615978; --line:#E1DCEA;
+  --studio:#1A1230; --studio-2:#2A1E4B; --on-studio:#F3EEFF; --on-studio-muted:#B9AED6;
+  --accent:#4D2F9E; --accent-ink:#FFFFFF; --gold:#B07D22; --onair:#D3352A;
+  --c-priere:#B07D22; --c-ens:#4D2F9E; --c-form:#1F7A6B; --c-culte:#C0392B; --c-jeun:#C25B0E; --c-radio:#2D6CB5;
+  --display:"Anton","Impact","Arial Narrow",sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#110D1B; --surface:#1B1628; --ink:#EEE9F7; --muted:#A69EBD; --line:#2E2742;
+  --studio:#0A0712; --studio-2:#1E1636; --on-studio:#F3EEFF; --on-studio-muted:#B1A6CF;
+  --accent:#A88DF2; --accent-ink:#140E22; --gold:#DCAA4C; --onair:#F2493D;
+  --c-priere:#DCAA4C; --c-ens:#A88DF2; --c-form:#4FC1AA; --c-culte:#F0796C; --c-jeun:#F29A55; --c-radio:#6FA8EB;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110D1B; --surface:#1B1628; --ink:#EEE9F7; --muted:#A69EBD; --line:#2E2742;
+  --studio:#0A0712; --studio-2:#1E1636; --on-studio:#F3EEFF; --on-studio-muted:#B1A6CF;
+  --accent:#A88DF2; --accent-ink:#140E22; --gold:#DCAA4C; --onair:#F2493D;
+  --c-priere:#DCAA4C; --c-ens:#A88DF2; --c-form:#4FC1AA; --c-culte:#F0796C; --c-jeun:#F29A55; --c-radio:#6FA8EB;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)}
+.logo b{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.02em;line-height:1}
+.logo b span{color:var(--onair)}
+.nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav a{text-decoration:none;color:var(--muted);font-weight:600;padding:6px 10px;border-radius:6px;font-size:15px}
+.nav a:hover{color:var(--ink);background:var(--surface)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--onair)}
+.btn.small{padding:5px 10px;font-size:14px}
+.btn.icon{padding:5px 8px;font-size:14px;min-width:32px;justify-content:center}
+
+/* Studio */
+.studio{margin-top:20px;background:var(--studio);color:var(--on-studio);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+@media (max-width:760px){.studio{grid-template-columns:1fr}}
+.screen{position:relative;aspect-ratio:16/9;max-width:100%;background:radial-gradient(120% 90% at 20% 10%,var(--studio-2),var(--studio) 70%);display:grid;place-items:center;overflow:hidden}
+.screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.ident,.carton{position:relative;text-align:center;padding:24px;max-width:90%}
+.ident .big{font-family:var(--display);font-size:clamp(56px,11vw,112px);line-height:.9;letter-spacing:.01em}
+.ident .big span{color:var(--onair)}
+.ident p{margin:10px 0 0;color:var(--on-studio-muted);font-size:15px}
+.watch{margin-top:18px;display:inline-flex;align-items:center;gap:10px;background:var(--onair);color:#fff;border:0;border-radius:999px;padding:12px 22px;font-weight:700;font-size:17px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.watch:hover{filter:brightness(1.08)}
+.carton .k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.carton .t{font-family:var(--display);font-size:clamp(30px,5.5vw,54px);line-height:1;margin-top:8px}
+.carton .h{color:var(--on-studio-muted);margin-top:8px}
+.carton .bar{height:4px;background:rgba(255,255,255,.15);border-radius:4px;margin:16px auto 0;max-width:320px;overflow:hidden}
+.carton .bar i{display:block;height:100%;background:var(--onair);width:0}
+.carton .btn{margin-top:16px;background:transparent;color:var(--on-studio);border-color:rgba(255,255,255,.3)}
+.bars{position:absolute;left:0;right:0;bottom:0;height:6px;display:flex;z-index:1}
+.bars i{flex:1}
+.lower{position:absolute;left:14px;bottom:18px;right:14px;display:flex;align-items:stretch;max-width:520px;pointer-events:none;z-index:2}
+.lower .tag{background:var(--onair);color:#fff;font-family:var(--display);font-size:15px;letter-spacing:.06em;padding:6px 10px;display:flex;align-items:center}
+.lower .txt{background:rgba(10,7,18,.82);padding:6px 12px;min-width:0}
+.lower .txt b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lower .txt small{color:var(--on-studio-muted);font-size:13px}
+.unmute{position:absolute;top:12px;right:12px;z-index:3;background:rgba(10,7,18,.8);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:6px 12px;font-weight:600;cursor:pointer}
+.side{padding:20px;display:flex;flex-direction:column;gap:16px;border-left:1px solid rgba(255,255,255,.08)}
+@media (max-width:760px){.side{border-left:0;border-top:1px solid rgba(255,255,255,.08)}}
+.onair{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--on-studio-muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--onair);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(242,73,61,.6)}70%{box-shadow:0 0 0 10px rgba(242,73,61,0)}100%{box-shadow:0 0 0 0 rgba(242,73,61,0)}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+.nowtitle{font-family:var(--display);font-weight:400;font-size:clamp(28px,4vw,38px);line-height:1.05;letter-spacing:.01em}
+.nowmeta{color:var(--on-studio-muted);font-size:15px;margin-top:6px}
+.prog{height:4px;background:rgba(255,255,255,.12);border-radius:4px;margin-top:12px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--onair);width:0}
+.clock{font-family:var(--mono);font-size:13px;color:var(--on-studio-muted);font-variant-numeric:tabular-nums}
+.next{border-top:1px solid rgba(255,255,255,.1);padding-top:14px}
+.next .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.next b{display:block;font-size:18px;margin-top:4px}
+.next span{color:var(--on-studio-muted);font-size:14px}
+
+section{margin-top:44px}
+.sechead{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(30px,5vw,42px);line-height:1;letter-spacing:.01em;margin-top:4px}
+
+/* Programme */
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.days button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:600;min-width:60px}
+.days button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.days button .today{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--onair);font-weight:500}
+.grid{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.slot{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 16px;border-top:1px solid var(--line)}
+.slot:first-child{border-top:0}
+.slot time{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;color:var(--muted);line-height:1.3}
+.slot time em{display:block;font-style:normal;font-size:12px;opacity:.8}
+.slot b{display:block;font-size:17px}
+.slot small{color:var(--muted);font-size:14px}
+.slot.live{background:color-mix(in srgb,var(--onair) 8%,var(--surface))}
+.slot.live time{color:var(--onair);font-weight:600}
+.slot.loop{background:var(--bg);grid-template-columns:110px minmax(0,1fr)}
+.slot.late{opacity:.55}
+.livepill{font-family:var(--mono);font-size:11px;letter-spacing:.1em;background:var(--onair);color:#fff;border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:2px}
+.vidpill{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--accent);margin-left:8px}
+.cat{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+@media (max-width:520px){.slot{grid-template-columns:76px minmax(0,1fr)}.slot .cat{grid-column:2;justify-self:start}.slot.loop{grid-template-columns:76px minmax(0,1fr)}}
+
+/* Vidéos */
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.vcard{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--ink);background:none;border:0;padding:0;text-align:left;cursor:pointer;min-width:0}
+.thumb{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,var(--studio-2),var(--studio));display:grid;place-items:center}
+.thumb video{width:100%;height:100%;object-fit:cover}
+.thumb .play{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;box-shadow:0 4px 18px rgba(0,0,0,.3);transition:transform .15s}
+.vcard:hover .play{transform:scale(1.08)}
+.thumb .play svg{margin-left:4px}
+.thumb .mark{font-family:var(--display);color:rgba(255,255,255,.14);font-size:54px;letter-spacing:.02em}
+.badge{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:rgba(10,7,18,.8);color:#fff;padding:3px 7px;border-radius:4px}
+.badge.r{left:auto;right:8px}
+.badge.b{top:auto;bottom:8px;left:auto;right:8px}
+.vcard b{font-size:16px;line-height:1.3}
+.vcard small{color:var(--muted);font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty{border:1.5px dashed var(--line);border-radius:12px;padding:32px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:4px}
+
+/* Appel */
+.appel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px}
+@media (max-width:760px){.appel{grid-template-columns:1fr}}
+.appel blockquote{margin:0;font-size:18px;line-height:1.6;max-width:62ch;white-space:pre-line}
+.appel blockquote strong{font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.01em;display:block;line-height:1.1;margin-bottom:10px}
+.ways{display:flex;flex-direction:column;gap:12px}
+.way{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start}
+.way i{font-style:normal;font-family:var(--display);font-size:22px;color:var(--gold);line-height:1.2}
+.way b{display:block}
+.way span{color:var(--muted);font-size:15px}
+
+/* Dialogues */
+dialog{border:0;border-radius:14px;padding:0;background:var(--surface);color:var(--ink);width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog::backdrop{background:rgba(8,5,16,.7)}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+.dhead h3{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.01em}
+.dbody{padding:18px;display:flex;flex-direction:column;gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.tabs{display:flex;gap:6px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label,.field .l{font-weight:600;font-size:14px}
+.field input,.field select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+.field .hint{color:var(--muted);font-size:13px}
+.check{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg label{flex:1;text-align:center;padding:8px;cursor:pointer;font-weight:600;font-size:14px;border-left:1px solid var(--line)}
+.seg label:first-child{border-left:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--ink);color:var(--bg)}
+.seg label:has(input:focus-visible){outline:3px solid var(--accent);outline-offset:-3px}
+.list{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.li{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.li:first-child{border-top:0}
+.li .tm{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;width:92px;flex:0 0 auto}
+.li .t{flex:1;min-width:140px}
+.li .t b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .t small{color:var(--muted);font-size:13px}
+.li .dur{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
+.li .dur input{width:64px;border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:4px 6px;text-align:right;font-variant-numeric:tabular-nums}
+.li .acts{display:flex;gap:4px}
+.sum{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.sum b{color:var(--ink)}
+.dirty{background:color-mix(in srgb,var(--accent) 10%,var(--surface));border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:600;font-size:14px;position:sticky;bottom:0}
+.note{background:color-mix(in srgb,var(--gold) 14%,var(--surface));border-radius:8px;padding:10px 12px;font-size:14px}
+.err{color:var(--onair);font-size:14px;font-weight:600}
+.err:empty{display:none}
+.player video{width:100%;display:block;background:#000;max-height:70vh}
+.player .meta{padding:14px 18px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;z-index:20;max-width:calc(100vw - 32px)}
+.upd{display:block;margin-top:14px;background:var(--onair);color:#fff;text-decoration:none;font-weight:700;text-align:center;padding:10px 14px;border-radius:10px}
+footer{margin-top:48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+
+.screen iframe,#ytMain{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.player .frame{position:relative;aspect-ratio:16/9;background:#000}
+.player .frame iframe,.player .frame video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.detect{font-size:14px;color:var(--muted)}
+.detect b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href="#top" aria-label="CEFS TV"><b>CEFS<span>TV</span></b></a>
+  <nav class="nav"><a href="#programme">Programme</a><a href="#videos">Direct</a><a href="#appel">Appel</a></nav>
+  <button class="btn small" id="adminBtn" type="button">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    Espace admin
+  </button>
+</div></header>
+
+<main class="wrap" id="top">
+  <div class="studio">
+    <div class="screen" id="screen">
+      <div id="ytWrap" hidden><div id="ytMain"></div></div>
+      <video id="tv" playsinline hidden></video>
+      <div class="ident" id="ident">
+        <div class="big">CEFS<span>TV</span></div>
+        <p>Centre d'Évangélisation et de Formation Sociale</p>
+        <button class="watch" id="watchBtn" type="button"><svg width="16" height="18" viewBox="0 0 20 22" aria-hidden="true"><path d="M0 0l20 11L0 22z" fill="#fff"/></svg>Regarder la chaîne</button>
+      </div>
+      <div class="carton" id="carton" hidden>
+        <div class="k" id="cK">En cours</div>
+        <div class="t" id="cT"></div>
+        <div class="h" id="cH"></div>
+        <div class="bar"><i id="cBar"></i></div>
+      </div>
+      <button class="unmute" id="unmute" type="button" hidden>Activer le son</button>
+      <div class="bars" aria-hidden="true"><i style="background:var(--c-priere)"></i><i style="background:var(--c-ens)"></i><i style="background:var(--c-form)"></i><i style="background:var(--c-culte)"></i><i style="background:var(--c-jeun)"></i><i style="background:var(--c-radio)"></i></div>
+      <div class="lower" id="lower"><div class="tag">EN DIRECT</div><div class="txt"><b id="lT">CEFS TV</b><small id="lH">Avec l'apôtre Guirat KPAN</small></div></div>
+    </div>
+    <aside class="side">
+      <div class="onair"><span class="dot" id="dot"></span><span id="nowLbl">À l'antenne</span></div>
+      <div>
+        <div class="nowtitle" id="nowTitle">Programme du jour</div>
+        <div class="nowmeta" id="nowMeta"></div>
+        <div class="prog"><i id="nowBar"></i></div>
+      </div>
+      <div class="next"><div class="lbl">Ensuite</div><b id="nextTitle">—</b><span id="nextMeta"></span></div>
+      <div class="clock" id="clock"></div>
+    </aside>
+  </div>
+
+  <section id="programme">
+    <div class="sechead"><div><div class="eyebrow">Émissions enchaînées · heure d'Abidjan</div><h2>Programme</h2></div></div>
+    <div class="days" id="days" role="tablist" aria-label="Jours de la semaine"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="videos">
+    <div class="sechead">
+      <div><div class="eyebrow">Vidéothèque</div><h2>Direct</h2></div>
+      <div class="filters" id="filters">
+        <button class="chip" type="button" data-f="all" aria-pressed="true">Toutes</button>
+        <button class="chip" type="button" data-f="courte" aria-pressed="false">Courtes</button>
+        <button class="chip" type="button" data-f="longue" aria-pressed="false">Longues</button>
+      </div>
+    </div>
+    <div class="vgrid" id="vgrid"></div>
+  </section>
+
+  <section id="appel">
+    <div class="sechead"><div><div class="eyebrow">Rejoignez la famille CEFS TV</div><h2>Appel</h2></div>
+      <button class="btn" type="button" id="copyAppel">Copier l'appel</button></div>
+    <div class="appel">
+      <blockquote id="appelText"><strong>Allumez votre foi, allumez CEFS TV.</strong>Chaque jour, l'apôtre Guirat KPAN et les équipes du Centre d'Évangélisation et de Formation Sociale vous accompagnent : prière de l'aube, enseignements de la Parole, École de la Prédication, culte de guérison et de délivrance, et culte dominical.
+Regardez, priez avec nous et partagez ce lien autour de vous. Une vidéo partagée peut relever une vie.</blockquote>
+      <div class="ways">
+        <div class="way"><i>1</i><div><b>Regardez</b><span>Les émissions s'enchaînent toute la journée. Lancez la chaîne et laissez-vous porter.</span></div></div>
+        <div class="way"><i>2</i><div><b>Partagez</b><span>Envoyez le lien de CEFS TV à votre famille, vos amis et vos groupes de prière.</span></div></div>
+        <div class="way"><i>3</i><div><b>Soutenez</b><span>Priez pour la chaîne et soutenez l'œuvre en vous procurant les livres des Éditions CEFS.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>CEFS TV · Centre d'Évangélisation et de Formation Sociale · Éditions CEFS · <a href="https://github.com/kpanguirat5766-cefs/cefs-tv-app/releases/latest/download/CEFS-TV.apk">Application Android</a></footer>
+</main>
+
+<dialog id="playerDlg" aria-label="Lecteur vidéo">
+  <div class="dhead"><h3 id="pTitle">Lecture</h3><button class="btn small" type="button" data-close>Fermer</button></div>
+  <div class="player"><div class="frame" id="pFrame"></div><div class="meta" id="pDesc"></div></div>
+</dialog>
+
+<dialog id="pinDlg" aria-label="Code administrateur" style="width:min(420px,calc(100vw - 32px))">
+  <div class="dhead"><h3 id="pinTitle">Code administrateur</h3><button class="btn small" type="button" data-close>Fermer</button></div>
+  <form class="dbody" id="pinForm" novalidate>
+    <p id="pinIntro" style="margin:0;color:var(--muted)">Entrez le code administrateur de CEFS TV.</p>
+    <div class="field"><label for="pin1" id="pin1Lbl">Code</label><input id="pin1" type="password" inputmode="numeric" autocomplete="off" maxlength="12" style="font-size:22px;letter-spacing:.3em;text-align:center"></div>
+    <div class="field" id="pin2Field" hidden><label for="pin2">Confirmez le code</label><input id="pin2" type="password" inputmode="numeric" autocomplete="off" maxlength="12" style="font-size:22px;letter-spacing:.3em;text-align:center"></div>
+    <div class="err" id="pinErr" role="alert"></div>
+    <button class="btn primary" type="submit" id="pinOk" style="justify-content:center">Valider</button>
+  </form>
+</dialog>
+
+<dialog id="keyDlg" aria-label="Clé d'enregistrement" style="width:min(520px,calc(100vw - 32px))">
+  <div class="dhead"><h3>Clé d'enregistrement</h3><button class="btn small" type="button" data-close>Fermer</button></div>
+  <form class="dbody" id="keyForm" novalidate>
+    <p style="margin:0">Pour enregistrer vos changements, ce téléphone a besoin d'une <b>clé GitHub</b>. Elle se donne <b>une seule fois</b> et reste sur cet appareil.</p>
+    <ol style="margin:0;padding-left:20px;line-height:1.7">
+      <li>Ouvrez <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">cette page GitHub</a>.</li>
+      <li><b>Token name</b> : CEFS TV. <b>Expiration</b> : la plus longue possible.</li>
+      <li><b>Repository access</b> : « Only select repositories », puis <b>cefs-tv-app</b>.</li>
+      <li><b>Permissions</b> : « Contents » sur <b>Read and write</b>.</li>
+      <li>Appuyez sur <b>Generate token</b>, copiez la clé (elle commence par github_pat_) et collez-la ici.</li>
+    </ol>
+    <div class="field"><label for="keyIn">Clé GitHub</label><input id="keyIn" type="password" autocomplete="off" placeholder="github_pat_…"></div>
+    <div class="err" id="keyErr" role="alert"></div>
+    <button class="btn primary" type="submit" id="keyOk" style="justify-content:center">Enregistrer la clé</button>
+  </form>
+</dialog>
+
+<dialog id="adminDlg" aria-label="Espace administrateur">
+  <div class="dhead"><h3>Espace admin</h3><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn small" type="button" id="pinChange">Changer le code</button><button class="btn small" type="button" id="lockBtn">Verrouiller</button><button class="btn small" type="button" data-close>Fermer</button></span></div>
+  <div class="dbody">
+    <div class="err" id="adminMsg" role="alert"></div>
+    <div class="tabs" role="tablist">
+      <button class="chip" type="button" data-tab="p" aria-pressed="true">Programme</button>
+      <button class="chip" type="button" data-tab="v" aria-pressed="false">Vidéos</button>
+    </div>
+
+    <!-- PROGRAMME -->
+    <div class="stack" data-panel="p">
+      <div class="row">
+        <div class="field"><label for="pDay">Jour</label><select id="pDay"></select></div>
+        <div class="field"><label for="pStart">Début de la journée</label><input id="pStart" type="time"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="pLoop"> Après la dernière émission, rediffuser la journée en boucle jusqu'à minuit</label>
+      <div class="sum" id="pSum"></div>
+      <div class="list" id="pList"></div>
+
+      <form id="addForm" class="stack" novalidate style="border-top:1px solid var(--line);padding-top:16px">
+        <div class="field"><label for="aSrc">Ajouter à la suite</label><select id="aSrc"></select><span class="hint">Choisissez une vidéo de la vidéothèque : sa durée est reprise automatiquement.</span></div>
+        <div class="field"><label for="aTitle">Titre de l'émission</label><input id="aTitle" maxlength="80" placeholder="Ex. : Réveil de la Parole"></div>
+        <div class="row">
+          <div class="field"><label for="aCat">Catégorie</label><select id="aCat"></select></div>
+          <div class="field"><label for="aHost">Intervenant ou sous-titre</label><input id="aHost" maxlength="80" placeholder="Apôtre Guirat KPAN"></div>
+          <div class="field"><label for="aDur">Durée (minutes)</label><input id="aDur" type="number" min="1" max="1440" step="1" inputmode="numeric" value="30"></div>
+        </div>
+        <div class="err" id="aErr" role="alert"></div>
+        <div><button class="btn" type="submit">Ajouter à la fin</button></div>
+      </form>
+
+      <div class="row" style="align-items:end">
+        <div class="field"><label for="cpTo">Copier ce programme vers</label><select id="cpTo"></select></div>
+        <div><button class="btn" type="button" id="cpBtn">Copier</button></div>
+      </div>
+
+      <div class="dirty" id="dirtyBar" hidden><span>Modifications non publiées</span><span style="display:flex;gap:6px"><button class="btn small" type="button" id="discardBtn">Annuler</button><button class="btn small primary" type="button" id="pubBtn">Publier le programme</button></span></div>
+    </div>
+
+    <!-- VIDÉOS -->
+    <form id="vForm" class="stack" data-panel="v" hidden novalidate>
+      <div class="field"><span class="l">Source</span>
+        <div class="seg"><label><input type="radio" name="vSrc" id="vSrcY" value="youtube" checked>Lien YouTube</label><label><input type="radio" name="vSrc" id="vSrcU" value="url">Lien vidéo MP4</label></div></div>
+      <div class="field"><label for="vUrl" id="vUrlLbl">Lien YouTube</label><input id="vUrl" type="url" inputmode="url" placeholder="https://youtu.be/…"><span class="hint" id="vUrlHint">Toutes les durées sont acceptées. La vidéo joue directement sur CEFS TV.</span></div>
+      <div class="detect" id="detect" hidden></div>
+      <div class="field" id="manualDur" hidden><span class="l">Durée de la vidéo</span><div style="display:flex;gap:8px;align-items:center"><input id="vH" type="number" min="0" max="24" inputmode="numeric" placeholder="0" aria-label="Heures" style="width:70px"> h <input id="vM" type="number" min="0" max="59" inputmode="numeric" placeholder="45" aria-label="Minutes" style="width:70px"> min</div></div>
+      <div class="field"><label for="vTitle">Titre</label><input id="vTitle" maxlength="120" placeholder="Ex. : La foi qui déplace les montagnes"></div>
+      <div class="field"><label for="vDesc">Description (facultatif)</label><input id="vDesc" maxlength="240" placeholder="Une phrase pour donner envie de regarder"></div>
+      <div class="field"><label for="vCat">Catégorie</label><select id="vCat"></select></div>
+      <div class="field"><label for="vProg">Programmer aussi à la suite du</label><select id="vProg"></select></div>
+      <div class="err" id="vErr" role="alert"></div>
+      <div><button class="btn primary" type="submit" id="vSave">Publier la vidéo</button></div>
+      <div class="field"><span class="l">Vidéos publiées</span><div class="list" id="vList"></div></div>
+      <div><button class="btn small" type="button" id="keyForget">Oublier la clé GitHub de ce téléphone</button></div>
+    </form>
+  </div>
+</dialog>
+
+<div id="ytProbe" style="position:absolute;width:1px;height:1px;left:-9999px;top:0;overflow:hidden"></div>
+
+<script>
+const DEFAULT = {"v": 2, "loop": true, "videos": [], "days": [{"start": "06:00", "items": [{"title": "Prière de l'aube", "cat": "Prière", "host": "Équipe d'intercession CEFS", "dur": 1800, "id": "e01"}, {"title": "Réveil de la Parole", "cat": "Enseignement", "host": "Apôtre Guirat KPAN", "dur": 1800, "id": "e02"}, {"title": "Néhémie : bâtir et restaurer", "cat": "Enseignement", "host": "Apôtre Guirat KPAN", "dur": 3600, "id": "e03"}, {"title": "Midi de la foi", "cat": "Enseignement", "host": "À la lumière de la foi", "dur": 1200, "id": "e04"}, {"title": "Témoignages : Dieu agit", "cat": "Culte", "host": "Fidèles du CEFS", "dur": 1800, "id": "e05"}, {"title": "La Voix du Bon Berger", "cat": "Radio", "host": "Relais de la radio CEFS", "dur": 1800, "id": "e06"}]}, {"start": "06:00", "items": [{"title": "Prière de l'aube", "cat": "Prière", "host": "Équipe d'intercession CEFS", "dur": 1800, "id": "e07"}, {"title": "Réveil de la Parole", "cat": "Enseignement", "host": "Apôtre Guirat KPAN", "dur": 1800, "id": "e08"}, {"title": "École de la Prédication", "cat": "Formation", "host": "Ministère de la Prédication", "dur": 5400, "id": "e09"}, {"title": "Midi de la foi", "cat": "Enseignement", "host": "À la lumière de la foi", "dur": 1200, "id": "e10"}, {"title": "Témoignages : Dieu agit", "cat": "Culte", "host": "Fidèles du CEFS", "dur": 1800, "id": "e11"}, {"title": "La Voix du Bon Berger", "cat": "Radio", "host": "Relais de la radio CEFS", "dur": 1800, "id": "e12"}]}, {"start": "06:00", "items": [{"title": "Prière de l'aube", "cat": "Prière", "host": "Équipe d'intercession CEFS", "dur": 1800, "id": "e13"}, {"title": "Réveil de la Parole", "cat": "Enseignement", "host": "Apôtre Guirat KPAN", "dur": 1800, "id": "e14"}, {"title": "L'Évangile qui guérit et libère", "cat": "Prière", "host": "Culte de guérison et de délivrance", "dur": 5400, "id": "e15"}, {"title": "Midi de la foi", "cat": "Enseignement", "host": "À la lumière de la foi", "dur": 1200, "id": "e16"}, {"title": "Témoignages : Dieu agit", "cat": "Culte", "host": "Fidèles du CEFS", "dur": 1800, "id": "e17"}, {"title": "La Voix du Bon Berger", "cat": "Radio", "host": "Relais de la radio CEFS", "dur": 1800, "id": "e18"}]}, {"start": "06:00", "items": [{"title": "Prière de l'aube", "cat": "Prière", "host": "Équipe d'intercession CEFS", "dur": 1800, "id": "e19"}, {"title": "Réveil de la Parole", "cat": "Enseignement", "host": "Apôtre Guirat KPAN", "dur": 1800, "id": "e20"}, {"title": "Former pour transformer", "cat": "Formation", "host": "Formation sociale CEFS", "dur": 3600, "id": "e21"}, {"title": "Midi de la foi", "cat": "Enseignement", "host": "À la lumière de la foi", "dur": 1200, "id": "e22"}, {"title": "Témoignages : Dieu agit", "cat": "Culte", "host": "Fidèles du CEFS", "dur": 1800, "id": "e23"}, {"title": "La Voix du Bon Berger", "cat": "Radio", "host": "Relais de la radio CEFS", "dur": 1800, "id": "e24"}]}, {"start": "06:00", "items": [{"title": "Prière de l'aube", "cat": "Prière", "host": "Équipe d'intercession CEFS", "dur": 1800, "id": "e25"}, {"title": "Réveil de la Parole", "cat": "Enseignement", "host": "Apôtre Guirat KPAN", "dur": 1800, "id": "e26"}, {"title": "Veillée de prière", "cat": "Prière", "host": "Apôtre Guirat KPAN", "dur": 7200, "id": "e27"}, {"title": "Midi de la foi", "cat": "Enseignement", "host": "À la lumière de la foi", "dur": 1200, "id": "e28"}, {"title": "Témoignages : Dieu agit", "cat": "Culte", "host": "Fidèles du CEFS", "dur": 1800, "id": "e29"}, {"title": "La Voix du Bon Berger", "cat": "Radio", "host": "Relais de la radio CEFS", "dur": 1800, "id": "e30"}]}, {"start": "07:00", "items": [{"title": "Réveil de la Parole", "cat": "Enseignement", "host": "Apôtre Guirat KPAN", "dur": 1800, "id": "e31"}, {"title": "Jeunesse en feu", "cat": "Jeunesse", "host": "Jeunesse CEFS", "dur": 5400, "id": "e32"}, {"title": "Rediffusion de la semaine", "cat": "Enseignement", "host": "Meilleurs moments", "dur": 3600, "id": "e33"}, {"title": "Témoignages : Dieu agit", "cat": "Culte", "host": "Fidèles du CEFS", "dur": 1800, "id": "e34"}, {"title": "La Voix du Bon Berger", "cat": "Radio", "host": "Relais de la radio CEFS", "dur": 1800, "id": "e35"}]}, {"start": "07:00", "items": [{"title": "Prière de consécration", "cat": "Prière", "host": "Équipe d'intercession CEFS", "dur": 3600, "id": "e36"}, {"title": "Culte dominical", "cat": "Culte", "host": "Apôtre Guirat KPAN", "dur": 10800, "id": "e37"}, {"title": "Témoignages : Dieu agit", "cat": "Culte", "host": "Fidèles du CEFS", "dur": 1800, "id": "e38"}, {"title": "La Voix du Bon Berger", "cat": "Radio", "host": "Relais de la radio CEFS", "dur": 1800, "id": "e39"}]}], "pin": "7646d73811db88d8c0d02dfa431be264ff97a7cb409d5c6f87394c1196c4fe5f", "rev": 1791861486115};
+const REPO = "kpanguirat5766-cefs/cefs-tv-app", DATA_PATH = "docs/data/tv.json";
+const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
+const DAY = 86400, SHORT = 600;
+const clone = o => JSON.parse(JSON.stringify(o));
+let state = clone(DEFAULT);
+let draft = null, dirty = false;
+let selDay = nowAbj().day, filter = "all", pDay = selDay;
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hm = t => { const [h,m] = String(t||"06:00").split(":").map(Number); return (h*60+m)*60; };
+const fmtT = s => { s = Math.floor(s) % DAY; return String(Math.floor(s/3600)).padStart(2,"0")+":"+String(Math.floor(s%3600/60)).padStart(2,"0"); };
+const fmtDur = s => { s=Math.round(s); if(s<60) return s+" s"; const m=Math.round(s/60); return m<60 ? m+" min" : Math.floor(m/60)+" h "+String(m%60).padStart(2,"0"); };
+const fmtClip = s => { s=Math.round(s); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0"); };
+const uid = () => Math.random().toString(36).slice(2,9);
+const vid = id => state.videos.find(v=>v.id===id);
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(_){} }, del(k){ try{ localStorage.removeItem(k); }catch(_){} } };
+function nowAbj(){ const d=new Date(); return {day:(d.getUTCDay()+6)%7, s:d.getUTCHours()*3600+d.getUTCMinutes()*60+d.getUTCSeconds()+d.getUTCMilliseconds()/1000, d}; }
+function ytId(u){
+  try{ const x=new URL(u.trim()); const h=x.hostname.replace(/^www\.|^m\./,"");
+    if(h==="youtu.be") return x.pathname.slice(1).split("/")[0]||null;
+    if(h==="youtube.com"||h==="music.youtube.com"){ if(x.searchParams.get("v")) return x.searchParams.get("v");
+      const m=x.pathname.match(/^\/(shorts|live|embed)\/([\w-]{6,})/); if(m) return m[2]; }
+  }catch(_){}
+  return null;
+}
+
+/* ===== Grille calculée à partir des durées ===== */
+function itemDur(it){ const v = it.video && vid(it.video); return Math.max(1, Math.round(v && v.dur ? v.dur : (it.dur||0))); }
+function plan(d, src){ src = src || state; const day = src.days[d]; const s0 = hm(day.start); let t = s0;
+  const items = day.items.map(it=>{ const dur=itemDur(it); const o={...it,dur,s:t,e:t+dur}; t+=dur; return o; });
+  return {s0, total:t-s0, items, loop: src.loop}; }
+function locate(d, x){
+  const p = plan(d);
+  if(!p.items.length) return {p};
+  if(x < p.s0) return {p, next:p.items[0], nextAt:p.s0};
+  let rel = x - p.s0, pass = 0;
+  if(rel >= p.total){ if(!p.loop) return {p}; pass = Math.floor(rel/p.total); rel %= p.total; }
+  const i = p.items.findIndex(it=>rel < it.e - p.s0);
+  const it = p.items[i], base = p.s0 + pass*p.total;
+  const start = base + it.s - p.s0, end = Math.min(DAY, base + it.e - p.s0);
+  if(start >= DAY) return {p};
+  let next = p.items[i+1] || (p.loop ? p.items[0] : null);
+  if(end >= DAY) next = null;
+  return {p, cur:it, idx:i, pass, start, end, off:x-start, next, nextAt: next ? end : null};
+}
+function upcoming(day, x){
+  const L = locate(day, x);
+  if(L.next) return {it:L.next, d:day, at:L.nextAt};
+  for(let i=1;i<=7;i++){ const d=(day+i)%7, p=plan(d); if(p.items.length) return {it:p.items[0], d, at:p.s0}; }
+  return null;
+}
+
+/* ===== Lecteur YouTube ===== */
+let ytReadyResolve; const ytReady = new Promise(r=>ytReadyResolve=r);
+window.onYouTubeIframeAPIReady = () => ytReadyResolve();
+(function(){ const s=document.createElement("script"); s.src="https://www.youtube.com/iframe_api"; document.head.appendChild(s); })();
+let ytMain = null, ytMainReady = null;
+function getMainPlayer(){
+  if(ytMainReady) return ytMainReady;
+  ytMainReady = ytReady.then(()=>new Promise(res=>{
+    ytMain = new YT.Player("ytMain", { width:"100%", height:"100%",
+      playerVars:{ autoplay:1, playsinline:1, rel:0, modestbranding:1, fs:1 },
+      events:{ onReady:()=>res(ytMain), onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED) onClipEnded(); } } });
+  }));
+  return ytMainReady;
+}
+function probeDuration(id){
+  return ytReady.then(()=>new Promise(res=>{
+    let done=false, t0=Date.now(), p;
+    const finish=d=>{ if(done) return; done=true; try{ p.destroy(); }catch(_){} $("ytProbe").innerHTML='<div id="ytProbeIn"></div>'; res(d); };
+    $("ytProbe").innerHTML='<div id="ytProbeIn"></div>';
+    p = new YT.Player("ytProbeIn", { width:"1", height:"1", videoId:id, playerVars:{ autoplay:1, mute:1, playsinline:1, controls:0 },
+      events:{ onReady:e=>{ try{ e.target.mute(); e.target.playVideo(); }catch(_){}
+        const tick=()=>{ if(done) return; let d=0; try{ d=e.target.getDuration(); }catch(_){} if(d>0) return finish(d); if(Date.now()-t0>15000) return finish(0); setTimeout(tick,400); }; tick(); },
+        onError:()=>finish(0) } });
+    setTimeout(()=>finish(0), 20000);
+  }));
+}
+
+/* ===== Barre latérale ===== */
+function renderNow(){
+  const {day,s} = nowAbj(); const L = locate(day,s);
+  if(L.cur){
+    $("nowLbl").textContent = L.pass ? "À l'antenne · rediffusion" : "À l'antenne maintenant"; $("dot").hidden=false;
+    $("nowTitle").textContent = L.cur.title;
+    $("nowMeta").textContent = `${fmtT(L.start)} – ${fmtT(L.end)} · ${L.cur.host||L.cur.cat}`;
+    $("nowBar").style.width = Math.min(100, L.off/(L.end-L.start)*100)+"%";
+  } else {
+    $("nowLbl").textContent="Hors antenne"; $("dot").hidden=true;
+    $("nowTitle").textContent="Fin des programmes"; $("nowMeta").textContent="La vidéothèque reste ouverte."; $("nowBar").style.width="0";
+  }
+  const n = upcoming(day,s);
+  if(n){ $("nextTitle").textContent=n.it.title; $("nextMeta").textContent=`${n.d===day?"Aujourd'hui":DAYS[n.d]} à ${fmtT(n.at)} · ${fmtDur(n.it.dur)}`; }
+  else { $("nextTitle").textContent="—"; $("nextMeta").textContent=""; }
+  $("clock").textContent = `${DAYS[day]} ${fmtT(s)} · heure d'Abidjan`;
+  if(!watching){ $("lT").textContent = L.cur ? L.cur.title : "CEFS TV"; $("lH").textContent = L.cur ? `Jusqu'à ${fmtT(L.end)}` : "Avec l'apôtre Guirat KPAN"; }
+  if(watching && !$("carton").hidden && L.cur) $("cBar").style.width = Math.min(100, L.off/(L.end-L.start)*100)+"%";
+}
+
+/* ===== Écran : la chaîne en continu ===== */
+let watching = false, tuneT = null, onItem = null;
+const tv = $("tv");
+function showLayer(which){
+  $("ytWrap").hidden = which!=="yt"; tv.hidden = which!=="mp4"; $("carton").hidden = which!=="carton";
+  if(which!=="yt" && ytMain){ try{ ytMain.pauseVideo(); }catch(_){} }
+  if(which!=="mp4"){ tv.pause(); }
+  $("lower").hidden = which==="yt";
+}
+function tune(){
+  clearTimeout(tuneT);
+  if(!watching) return;
+  const {day,s} = nowAbj(); const L = locate(day,s);
+  $("ident").hidden = true;
+  if(L.cur){
+    const v = L.cur.video && vid(L.cur.video), key = L.cur.id+"|"+L.start;
+    $("lT").textContent = L.cur.title; $("lH").textContent = `${fmtT(L.start)} – ${fmtT(L.end)}${L.cur.host?" · "+L.cur.host:""}`;
+    if(v && v.src==="youtube"){
+      showLayer("yt");
+      getMainPlayer().then(p=>{
+        if(onItem !== key){ onItem = key; p.loadVideoById({videoId:v.yt, startSeconds:Math.max(0,Math.floor(nowAbj().s - L.start))}); }
+        else { try{ const ct=p.getCurrentTime(); const want=nowAbj().s-L.start; if(Math.abs(ct-want)>8) p.seekTo(want,true); }catch(_){} }
+      });
+    } else if(v && v.src==="url"){
+      showLayer("mp4");
+      if(onItem !== key){
+        onItem = key; tv.src = v.url;
+        tv.onloadedmetadata = () => { const o = nowAbj().s - L.start; if(o < (tv.duration||0) - 1) tv.currentTime = Math.max(0,o); tv.play().catch(()=>{ tv.muted=true; $("unmute").hidden=false; tv.play().catch(()=>{}); }); };
+      }
+    } else {
+      onItem = null; showLayer("carton");
+      $("cK").textContent = L.pass ? "Rediffusion en cours" : "En cours";
+      $("cT").textContent = L.cur.title;
+      $("cH").textContent = `${L.cur.host?L.cur.host+" · ":""}jusqu'à ${fmtT(L.end)}`;
+      $("cBar").style.width = Math.min(100, L.off/(L.end-L.start)*100)+"%";
+    }
+    tuneT = setTimeout(tune, Math.max(500, (L.end - s)*1000 + 300));
+  } else {
+    onItem = null; showLayer("carton");
+    const n = upcoming(day,s);
+    $("cK").textContent = "Hors antenne"; $("cT").textContent = "À tout à l'heure";
+    $("cH").textContent = n ? `Reprise ${n.d===day?"aujourd'hui":DAYS[n.d].toLowerCase()} à ${fmtT(n.at)} avec « ${n.it.title} »` : "Le programme sera bientôt publié.";
+    $("cBar").style.width="0"; $("lT").textContent="CEFS TV"; $("lH").textContent="Hors antenne";
+    tuneT = setTimeout(tune, 60000);
+  }
+}
+function onClipEnded(){
+  const {day,s}=nowAbj(); const L=locate(day,s); const left = L.cur ? L.end - s : 0;
+  clearTimeout(tuneT); tuneT = setTimeout(()=>{ onItem=null; tune(); }, Math.max(200, left*1000+200));
+}
+tv.addEventListener("ended", onClipEnded);
+$("watchBtn").addEventListener("click", ()=>{ watching = true; tv.muted = false; getMainPlayer(); tune(); });
+$("unmute").addEventListener("click", ()=>{ tv.muted=false; $("unmute").hidden=true; });
+
+/* ===== Grille publique ===== */
+function renderDays(){
+  const t = nowAbj().day;
+  $("days").innerHTML = DAYS.map((d,i)=>`<button type="button" role="tab" aria-selected="${i===selDay}" data-d="${i}">${i===t?'<span class="today">AUJ.</span>':''}${d.slice(0,3)}.</button>`).join("");
+}
+function renderGrid(){
+  const {day,s} = nowAbj(); const p = plan(selDay); const L = selDay===day ? locate(day,s) : {};
+  if(!p.items.length){ $("grid").innerHTML = `<div class="empty" style="border:0"><b>Pas d'émission ce jour</b>La vidéothèque reste disponible.</div>`; return; }
+  let html = p.items.map((x,i)=>{
+    const live = L.cur && L.idx===i, late = x.s >= DAY, v = x.video && vid(x.video);
+    const t = live && L.pass ? `${fmtT(L.start)}–${fmtT(L.end)}<em>prévu ${fmtT(x.s)}</em>` : `${fmtT(x.s)}–${fmtT(x.e)}<em>${fmtDur(x.dur)}</em>`;
+    return `<div class="slot${live?" live":""}${late?" late":""}"><time>${t}</time><div style="min-width:0"><b>${esc(x.title)}${live?`<span class="livepill">${L.pass?"REDIFFUSION":"EN DIRECT"}</span>`:""}${v?`<span class="vidpill">▶ vidéo</span>`:""}</b><small>${esc(x.host)}${late?" · après minuit, non diffusée":""}</small></div><span class="cat" style="color:var(${CATS[x.cat]||"--muted"})">${esc(x.cat)}</span></div>`;
+  }).join("");
+  const end = p.s0 + p.total;
+  if(p.loop && end < DAY) html += `<div class="slot loop"><time>${fmtT(end)}–00:00</time><div><b>Rediffusion de la journée en boucle</b><small>Les émissions reprennent dans le même ordre jusqu'à minuit.</small></div></div>`;
+  else if(end < DAY) html += `<div class="slot loop"><time>${fmtT(end)}</time><div><b>Fin des programmes</b><small>Reprise ${DAYS[(selDay+1)%7].toLowerCase()} à ${esc(state.days[(selDay+1)%7].start)}.</small></div></div>`;
+  $("grid").innerHTML = html;
+}
+
+/* ===== Vidéothèque ===== */
+const PLAY = '<span class="play"><svg width="20" height="22" viewBox="0 0 20 22"><path d="M0 0l20 11L0 22z" fill="#1D1631"/></svg></span>';
+const lenOf = v => (v.dur||0) <= SHORT ? "courte" : "longue";
+function renderVideos(){
+  if(!state.videos.length){ $("vgrid").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>Les premières vidéos arrivent</b>L'administrateur les ajoute depuis l'Espace admin, puis les place dans le programme.</div>`; return; }
+  const list = state.videos.filter(v=>filter==="all"||lenOf(v)===filter);
+  if(!list.length){ $("vgrid").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>Aucune vidéo ${filter} pour l'instant</b>Essayez le filtre « Toutes ».</div>`; return; }
+  $("vgrid").innerHTML = list.map(v=>{
+    const thumb = v.src==="youtube" ? `<img src="https://i.ytimg.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="" loading="lazy">` : `<span class="mark">CEFS TV</span>`;
+    return `<button class="vcard" type="button" data-play="${esc(v.id)}"><div class="thumb">${thumb}${PLAY}<span class="badge">${lenOf(v)==="courte"?"Courte":"Longue"}</span>${v.dur?`<span class="badge b">${fmtClip(v.dur)}</span>`:""}</div><b>${esc(v.title)}</b><small>${esc(v.cat)}${v.desc?" · "+esc(v.desc):""}</small></button>`;
+  }).join("");
+}
+
+function renderAll(){ renderNow(); renderDays(); renderGrid(); renderVideos(); if($("adminDlg").open) renderAdmin(); if(watching) tune(); }
+
+$("days").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b) return; selDay=+b.dataset.d; renderDays(); renderGrid(); });
+$("filters").addEventListener("click",e=>{ const b=e.target.closest("[data-f]"); if(!b) return; filter=b.dataset.f; document.querySelectorAll("#filters .chip").forEach(c=>c.setAttribute("aria-pressed",c===b)); renderVideos(); });
+$("vgrid").addEventListener("click",e=>{
+  const b=e.target.closest("[data-play]"); if(!b) return; const v=vid(b.dataset.play); if(!v) return;
+  if(watching){ try{ ytMain && ytMain.pauseVideo(); }catch(_){} tv.pause(); }
+  $("pTitle").textContent=v.title; $("pDesc").textContent=v.desc||v.cat||"";
+  $("pFrame").innerHTML = v.src==="youtube"
+    ? `<iframe src="https://www.youtube.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen title="${esc(v.title)}"></iframe>`
+    : `<video src="${esc(v.url)}" controls autoplay playsinline></video>`;
+  $("playerDlg").showModal();
+});
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>b.closest("dialog").close()));
+$("playerDlg").addEventListener("close",()=>{ $("pFrame").innerHTML=""; if(watching){ onItem=null; tune(); } });
+$("copyAppel").addEventListener("click",()=>{
+  const t = $("appelText").innerText.trim() + "\n\nCEFS TV · " + location.href.split("#")[0];
+  const sel = () => { const r=document.createRange(); r.selectNodeContents($("appelText")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Texte sélectionné : copiez-le"); };
+  try{ navigator.clipboard.writeText(t).then(()=>toast("Appel copié, prêt à partager"), sel); }catch(_){ sel(); }
+});
+function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.setAttribute("role","status"); t.textContent=msg; (document.querySelector("dialog[open]")||document.body).appendChild(t); setTimeout(()=>t.remove(),4000); }
+
+/* ===== Enregistrement sur GitHub ===== */
+const b64 = str => { const bytes = new TextEncoder().encode(str); let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b)); return btoa(bin); };
+const ghHeaders = tok => ({ "Authorization":"Bearer "+tok, "Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28" });
+let keyWaiter = null;
+function needKey(){
+  return new Promise(res=>{ keyWaiter = res; $("keyErr").textContent=""; $("keyIn").value=""; $("keyDlg").showModal(); });
+}
+$("keyDlg").addEventListener("close",()=>{ if(keyWaiter){ const w=keyWaiter; keyWaiter=null; w(store.get("cefs-gh")); } });
+$("keyForm").addEventListener("submit", async e=>{
+  e.preventDefault(); $("keyErr").textContent="";
+  const tok = $("keyIn").value.trim();
+  if(!/^(github_pat_|ghp_)/.test(tok)){ $("keyErr").textContent="Cette clé ne ressemble pas à une clé GitHub. Elle commence par github_pat_."; return; }
+  $("keyOk").disabled=true; $("keyOk").textContent="Vérification…";
+  try{
+    const r = await fetch(`https://api.github.com/repos/${REPO}`, {headers:ghHeaders(tok)});
+    const j = r.ok ? await r.json() : null;
+    if(!r.ok) throw new Error(r.status===401 ? "Clé refusée par GitHub. Vérifiez que vous l'avez copiée en entier." : "Cette clé n'a pas accès au dépôt cefs-tv-app.");
+    if(j.permissions && j.permissions.push === false) throw new Error("La clé n'a pas le droit d'écrire : mettez « Contents » sur « Read and write ».");
+    store.set("cefs-gh", tok); toast("Clé enregistrée sur ce téléphone"); $("keyDlg").close();
+  }catch(err){ $("keyErr").textContent = err.message || "Vérification impossible. Vérifiez la connexion."; }
+  $("keyOk").disabled=false; $("keyOk").textContent="Enregistrer la clé";
+});
+$("keyForget").addEventListener("click",()=>{ store.del("cefs-gh"); toast("Clé oubliée sur ce téléphone"); });
+
+async function save(before){
+  const fail = msg => { state = before; renderAll(); $("adminMsg").textContent = msg; toast(msg); return false; };
+  $("adminMsg").textContent = "";
+  let tok = store.get("cefs-gh") || await needKey();
+  if(!tok) return fail("Enregistrement annulé : la clé GitHub est nécessaire.");
+  state.rev = Date.now(); renderAll();
+  const body = JSON.stringify(state);
+  for(let attempt=0; attempt<2; attempt++){
+    try{
+      const g = await fetch(`https://api.github.com/repos/${REPO}/contents/${DATA_PATH}?ref=main&t=${Date.now()}`, {headers:ghHeaders(tok), cache:"no-store"});
+      if(g.status===401){ store.del("cefs-gh"); return fail("La clé GitHub n'est plus valable. Réessayez : une nouvelle clé vous sera demandée."); }
+      const sha = g.ok ? (await g.json()).sha : undefined;
+      const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${DATA_PATH}`, { method:"PUT", headers:{...ghHeaders(tok),"Content-Type":"application/json"},
+        body: JSON.stringify({ message:"CEFS TV : mise à jour du programme", content:b64(body), branch:"main", ...(sha?{sha}:{}) }) });
+      if(r.ok){ store.set("cefs-cache", body); return true; }
+      if(r.status===409 || r.status===422) continue;
+      if(r.status===401){ store.del("cefs-gh"); return fail("La clé GitHub n'est plus valable. Réessayez : une nouvelle clé vous sera demandée."); }
+      if(r.status===403 || r.status===404) return fail("La clé GitHub n'a pas le droit d'écrire. Créez-en une avec « Contents : Read and write ».");
+      return fail("L'enregistrement a échoué (erreur " + r.status + "). Réessayez dans un instant.");
+    }catch(_){ return fail("Pas de connexion à GitHub. Vérifiez Internet et réessayez."); }
+  }
+  return fail("Le programme a été modifié ailleurs en même temps. Réessayez.");
+}
+
+/* ===== Code administrateur ===== */
+let pinMode = "check";
+async function pinHash(code){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("cefs-tv:" + code));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function isUnlocked(){ try{ return !!state.pin && sessionStorage.getItem("cefs-admin") === state.pin; }catch(_){ return false; } }
+function remember(h){ try{ sessionStorage.setItem("cefs-admin", h); }catch(_){} }
+function openPin(mode){
+  pinMode = mode; $("pinErr").textContent = ""; $("pin1").value = ""; $("pin2").value = "";
+  const set = mode !== "check";
+  $("pin2Field").hidden = !set;
+  $("pinTitle").textContent = mode==="create" ? "Créer le code administrateur" : mode==="change" ? "Nouveau code" : "Code administrateur";
+  $("pinIntro").textContent = mode==="create" ? "Choisissez un code de 4 à 12 chiffres. Il sera demandé pour ouvrir l'Espace admin." : mode==="change" ? "Choisissez le nouveau code (4 à 12 chiffres)." : "Entrez le code administrateur de CEFS TV.";
+  $("pin1Lbl").textContent = set ? "Nouveau code" : "Code";
+  $("pinDlg").showModal(); setTimeout(()=>$("pin1").focus(), 50);
+}
+$("pinForm").addEventListener("submit", async e=>{
+  e.preventDefault(); $("pinErr").textContent = "";
+  const a = $("pin1").value.trim();
+  if(!/^\d{4,12}$/.test(a)){ $("pinErr").textContent = "Le code doit contenir de 4 à 12 chiffres."; return; }
+  if(!window.crypto || !crypto.subtle){ $("pinErr").textContent = "Ce navigateur ne peut pas vérifier le code."; return; }
+  if(pinMode === "check"){
+    const h = await pinHash(a);
+    if(h !== state.pin){ $("pinErr").textContent = "Code incorrect."; $("pin1").value=""; $("pin1").focus(); return; }
+    remember(h); $("pinDlg").close(); openAdmin(); return;
+  }
+  if(a !== $("pin2").value.trim()){ $("pinErr").textContent = "Les deux codes ne sont pas identiques."; return; }
+  const h = await pinHash(a), before = clone(state);
+  state.pin = h; $("pinOk").disabled = true; $("pinOk").textContent = "Enregistrement…";
+  const ok = await save(before);
+  $("pinOk").disabled = false; $("pinOk").textContent = "Valider";
+  if(ok){ remember(h); if(!dirty) draft = clone(state); $("pinDlg").close(); toast("Code administrateur enregistré"); if(!$("adminDlg").open) openAdmin(); }
+  else { $("pinErr").textContent = $("adminMsg").textContent || "Le code n'a pas pu être enregistré."; }
+});
+$("pinChange").addEventListener("click", ()=>openPin("change"));
+$("lockBtn").addEventListener("click", ()=>{ try{ sessionStorage.removeItem("cefs-admin"); }catch(_){} $("adminDlg").close(); toast("Espace admin verrouillé"); });
+$("adminBtn").addEventListener("click", ()=>{ if(isUnlocked()) return openAdmin(); openPin(state.pin ? "check" : "create"); });
+function openAdmin(){ if(!dirty) draft = clone(state); $("adminMsg").textContent=""; renderAdmin(); $("adminDlg").showModal(); }
+
+/* ===== Administration : programme ===== */
+const catOpts = Object.keys(CATS).map(c=>`<option>${c}</option>`).join("");
+$("aCat").innerHTML = catOpts; $("vCat").innerHTML = catOpts;
+$("pDay").innerHTML = DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("");
+$("vProg").innerHTML = `<option value="">Ne pas programmer</option>` + DAYS.map((d,i)=>`<option value="${i}">${d}</option>`).join("");
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  document.querySelectorAll("[data-panel]").forEach(p=>p.hidden = p.dataset.panel!==b.dataset.tab);
+}));
+function markDirty(){ dirty = true; renderAdmin(); }
+function renderAdmin(){
+  if(!draft) draft = clone(state);
+  const day = draft.days[pDay];
+  $("pDay").value = pDay; $("pStart").value = day.start; $("pLoop").checked = !!draft.loop;
+  const p = plan(pDay, draft), end = p.s0 + p.total;
+  $("pSum").innerHTML = `<span><b>${p.items.length}</b> émission${p.items.length>1?"s":""} · <b>${fmtDur(p.total||0)}</b> au total</span><span>${fmtT(p.s0)} → ${p.items.length?fmtT(end):"—"}${end>=DAY?" (dépasse minuit)":""}</span>`;
+  $("pList").innerHTML = p.items.length ? p.items.map((x,i)=>{
+    const v = x.video && vid(x.video), fixed = v && v.dur;
+    return `<div class="li"><span class="tm">${fmtT(x.s)}–${fmtT(x.e)}</span><div class="t"><b>${esc(x.title)}</b><small>${esc(x.cat)}${v?" · vidéo : "+esc(v.title):""}</small></div>
+      <span class="dur">${fixed?fmtDur(x.dur):`<input type="number" min="1" max="1440" value="${Math.round(x.dur/60)}" aria-label="Durée en minutes" data-dur="${i}"> min`}</span>
+      <span class="acts"><button class="btn icon" type="button" data-up="${i}" aria-label="Monter" ${i===0?"disabled":""}>↑</button><button class="btn icon" type="button" data-down="${i}" aria-label="Descendre" ${i===p.items.length-1?"disabled":""}>↓</button><button class="btn icon danger" type="button" data-rm="${i}" aria-label="Retirer">✕</button></span></div>`;
+  }).join("") : `<div class="li"><div class="t"><small>Aucune émission ce jour. Ajoutez-en ci-dessous.</small></div></div>`;
+  $("aSrc").innerHTML = `<option value="">Émission sans vidéo</option>` + state.videos.map(v=>`<option value="${esc(v.id)}">${esc(v.title)}${v.dur?" ("+fmtClip(v.dur)+")":""}</option>`).join("");
+  $("cpTo").innerHTML = `<option value="wk">Tous les jours de semaine (lun.–ven.)</option><option value="all">Tous les jours</option>` + DAYS.map((d,i)=>i===pDay?"":`<option value="${i}">${d}</option>`).join("");
+  $("dirtyBar").hidden = !dirty;
+  $("vList").innerHTML = state.videos.length ? state.videos.map(v=>`<div class="li"><div class="t"><b>${esc(v.title)}</b><small>${v.dur?fmtClip(v.dur):"durée inconnue"} · ${v.src==="youtube"?"YouTube":"Lien MP4"}</small></div><button class="btn small danger" type="button" data-delv="${esc(v.id)}">Supprimer</button></div>`).join("")
+    : `<div class="li"><div class="t"><small>Aucune vidéo publiée.</small></div></div>`;
+}
+$("pDay").addEventListener("change",()=>{ pDay=+$("pDay").value; renderAdmin(); });
+$("pStart").addEventListener("change",()=>{ if(!$("pStart").value) return; draft.days[pDay].start=$("pStart").value; markDirty(); });
+$("pLoop").addEventListener("change",()=>{ draft.loop=$("pLoop").checked; markDirty(); });
+$("pList").addEventListener("change",e=>{ const i=e.target.dataset.dur; if(i===undefined) return; const m=Math.max(1,Math.min(1440,Math.round(+e.target.value||1))); draft.days[pDay].items[+i].dur=m*60; markDirty(); });
+$("pList").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return; const its=draft.days[pDay].items;
+  if(b.dataset.up){ const i=+b.dataset.up; [its[i-1],its[i]]=[its[i],its[i-1]]; markDirty(); }
+  else if(b.dataset.down){ const i=+b.dataset.down; [its[i+1],its[i]]=[its[i],its[i+1]]; markDirty(); }
+  else if(b.dataset.rm){ its.splice(+b.dataset.rm,1); markDirty(); }
+});
+$("aSrc").addEventListener("change",()=>{
+  const v = vid($("aSrc").value);
+  if(v){ $("aTitle").value=v.title; $("aCat").value=v.cat; if(v.dur) $("aDur").value=Math.max(1,Math.round(v.dur/60)); }
+  $("aDur").disabled = !!(v && v.dur);
+});
+$("addForm").addEventListener("submit",e=>{
+  e.preventDefault(); $("aErr").textContent="";
+  const v = vid($("aSrc").value), title=$("aTitle").value.trim();
+  if(!title){ $("aErr").textContent="Indiquez le titre de l'émission."; return; }
+  const m = Math.round(+$("aDur").value);
+  if(!(v&&v.dur) && !(m>=1 && m<=1440)){ $("aErr").textContent="Indiquez une durée d'au moins 1 minute (24 heures au plus)."; return; }
+  draft.days[pDay].items.push({id:uid(), title, cat:$("aCat").value, host:$("aHost").value.trim(), dur:(v&&v.dur)?Math.round(v.dur):m*60, ...(v?{video:v.id}:{})});
+  $("addForm").reset(); $("aDur").disabled=false; markDirty();
+});
+$("cpBtn").addEventListener("click",()=>{
+  const to = $("cpTo").value; const targets = to==="wk"?[0,1,2,3,4]:to==="all"?[0,1,2,3,4,5,6]:[+to];
+  const src = draft.days[pDay];
+  targets.forEach(t=>{ if(t!==pDay) draft.days[t] = {start:src.start, items:src.items.map(x=>({...x,id:uid()}))}; });
+  markDirty(); toast("Programme copié : publiez pour l'appliquer");
+});
+$("discardBtn").addEventListener("click",()=>{ draft=clone(state); dirty=false; renderAdmin(); });
+$("pubBtn").addEventListener("click", async ()=>{
+  const before = clone(state); state = clone(draft); state.pin = before.pin;
+  $("pubBtn").disabled=true;
+  if(await save(before)){ dirty=false; draft=clone(state); toast("Programme publié"); }
+  $("pubBtn").disabled=false; renderAdmin();
+});
+
+/* ===== Administration : vidéos ===== */
+let detected = 0, detectFor = "";
+function srcMode(){ return $("vSrcY").checked ? "youtube" : "url"; }
+document.querySelectorAll('input[name="vSrc"]').forEach(r=>r.addEventListener("change",()=>{
+  const yt = srcMode()==="youtube";
+  $("vUrlLbl").textContent = yt ? "Lien YouTube" : "Lien vidéo MP4";
+  $("vUrl").placeholder = yt ? "https://youtu.be/…" : "https://…/video.mp4";
+  $("vUrlHint").textContent = yt ? "Toutes les durées sont acceptées. La vidéo joue directement sur CEFS TV." : "Lien direct vers un fichier MP4 hébergé ailleurs (Google Drive ne fonctionne pas).";
+  detected = 0; detectFor = ""; $("detect").hidden = true; $("manualDur").hidden = true; $("vUrl").value = "";
+}));
+function readDuration(url){
+  return new Promise(res=>{ const el=document.createElement("video"); el.preload="metadata"; const t=setTimeout(()=>res(0),15000);
+    el.onloadedmetadata=()=>{ clearTimeout(t); res(isFinite(el.duration)?el.duration:0); }; el.onerror=()=>{ clearTimeout(t); res(0); }; el.src=url; });
+}
+async function detect(){
+  const u = $("vUrl").value.trim(); if(!u || u===detectFor) return;
+  detectFor = u; detected = 0; $("manualDur").hidden = true;
+  const id = srcMode()==="youtube" ? ytId(u) : null;
+  if(srcMode()==="youtube" && !id){ $("detect").hidden=false; $("detect").textContent="Ce lien n'est pas un lien YouTube valide."; return; }
+  $("detect").hidden=false; $("detect").textContent="Recherche de la durée…";
+  const d = id ? await probeDuration(id) : await readDuration(u);
+  if(u !== $("vUrl").value.trim()) return;
+  if(d>0){ detected = Math.round(d); $("detect").innerHTML = `Durée détectée : <b>${fmtClip(detected)}</b>`; }
+  else { $("detect").textContent = "Durée non détectée : indiquez-la ci-dessous."; $("manualDur").hidden = false; }
+}
+$("vUrl").addEventListener("change", detect);
+$("vUrl").addEventListener("blur", detect);
+$("vUrl").addEventListener("paste", ()=>setTimeout(detect, 50));
+
+$("vForm").addEventListener("submit", async e=>{
+  e.preventDefault(); $("vErr").textContent="";
+  const u = $("vUrl").value.trim(), mode = srcMode();
+  const id = mode==="youtube" ? ytId(u) : null;
+  if(mode==="youtube" && !id){ $("vErr").textContent="Collez un lien YouTube valide (youtube.com ou youtu.be)."; return; }
+  if(mode==="url" && !/^https:\/\/\S+$/.test(u)){ $("vErr").textContent="Collez un lien qui commence par https://"; return; }
+  if(u !== detectFor) await detect();
+  let dur = detected;
+  if(!dur){ const m = Math.round((+$("vH").value||0)*60 + (+$("vM").value||0)); if(m>=1 && m<=1440) dur = m*60; }
+  if(!dur){ $("manualDur").hidden=false; $("vErr").textContent="Indiquez la durée de la vidéo (heures et minutes)."; return; }
+  const title = $("vTitle").value.trim(); if(!title){ $("vErr").textContent="Donnez un titre à la vidéo."; $("vTitle").focus(); return; }
+  const v = {id:uid(), title, desc:$("vDesc").value.trim(), cat:$("vCat").value, src:mode, dur, added:new Date().toISOString(), ...(id?{yt:id}:{url:u})};
+  const before = clone(state);
+  state.videos.unshift(v);
+  const pd = $("vProg").value;
+  if(pd!==""){ const it={id:uid(), title:v.title, cat:v.cat, host:"", dur:v.dur, video:v.id}; state.days[+pd].items.push(it); if(dirty) draft.days[+pd].items.push({...it}); }
+  $("vSave").disabled=true; $("vSave").textContent="Publication…";
+  const ok = await save(before);
+  $("vSave").disabled=false; $("vSave").textContent="Publier la vidéo";
+  if(ok){ $("vForm").reset(); detected=0; detectFor=""; $("detect").hidden=true; $("manualDur").hidden=true; if(!dirty) draft=clone(state); renderAdmin(); toast(pd!==""?`Vidéo publiée et programmée le ${DAYS[+pd].toLowerCase()}`:"Vidéo publiée"); }
+});
+$("vList").addEventListener("click", async e=>{
+  const b = e.target.closest("[data-delv]"); if(!b) return;
+  if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Confirmer ?"; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.armed; b.textContent="Supprimer"; } },4000); return; }
+  const before = clone(state), v = vid(b.dataset.delv);
+  state.videos = state.videos.filter(x=>x.id!==v.id);
+  const unlink = days => days.forEach(d=>d.items.forEach(it=>{ if(it.video===v.id){ it.dur=Math.round(v.dur||it.dur||60); delete it.video; } }));
+  unlink(state.days); if(draft) unlink(draft.days);
+  b.disabled = true;
+  if(await save(before)){ if(!dirty) draft=clone(state); renderAdmin(); toast("Vidéo supprimée"); }
+});
+
+/* ===== Démarrage : données publiées ===== */
+function adopt(d){
+  if(d && Array.isArray(d.videos) && Array.isArray(d.days) && (d.rev||0) >= (state.rev||0)){
+    const changed = (d.rev||0) !== (state.rev||0); state = d;
+    if(!dirty) draft = clone(state);
+    if(changed) renderAll();
+  }
+}
+try{ const c = store.get("cefs-cache"); if(c) adopt(JSON.parse(c)); }catch(_){}
+renderAll();
+function refresh(){ fetch("data/tv.json?t="+Date.now(), {cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{ if(d){ adopt(d); store.set("cefs-cache", JSON.stringify(state)); } }).catch(()=>{}); }
+refresh();
+setInterval(refresh, 5*60*1000);
+setInterval(renderNow, 1000);
+setInterval(()=>{ if(selDay===nowAbj().day) renderGrid(); }, 30000);
+</script>
+</body>
+</html>

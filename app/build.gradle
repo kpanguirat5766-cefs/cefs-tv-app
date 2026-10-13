@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
 }
 
-def cefsUrl = (project.findProperty('cefs.url') ?: 'https://claude.ai/artifact/CTc3kMh1dGRjrKhj6VGLjX').toString().trim()
+def cefsUrl = (project.findProperty('cefs.url') ?: 'https://kpanguirat5766-cefs.github.io/cefs-tv-app/').toString().trim()
 def cefsVersionCode = (project.findProperty('cefs.versionCode') ?: '1').toString().toInteger()
 
 android {
