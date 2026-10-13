@@ -1,0 +1,41 @@
+plugins {
+    id 'com.android.application'
+}
+
+def cefsUrl = (project.findProperty('cefs.url') ?: 'https://claude.ai/artifact/CTc3kMh1dGRjrKhj6VGLjX').toString().trim()
+def cefsVersionCode = (project.findProperty('cefs.versionCode') ?: '1').toString().toInteger()
+
+android {
+    namespace 'org.cefs.tv'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'org.cefs.tv'
+        minSdk 24
+        targetSdk 34
+        versionCode cefsVersionCode
+        versionName "1.${cefsVersionCode}"
+        resValue 'string', 'cefs_url', cefsUrl
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('cefs-tv.jks')
+            storePassword 'CefsTv2026!'
+            keyAlias 'cefstv'
+            keyPassword 'CefsTv2026!'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CefsTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/studio</item>
+        <item name="android:statusBarColor">@color/studio</item>
+        <item name="android:navigationBarColor">@color/studio</item>
+        <item name="android:colorAccent">@color/onair</item>
+    </style>
+</resources>

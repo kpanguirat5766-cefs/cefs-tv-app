@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CEFS TV</string>
+    <string name="tagline">La Parole qui éclaire, guérit et transforme</string>
+    <string name="error_title">Pas de connexion</string>
+    <string name="error_text">CEFS TV a besoin d\'Internet. Vérifiez vos données mobiles ou le Wi-Fi, puis réessayez.</string>
+    <string name="retry">Réessayer</string>
+    <string name="exit_hint">Appuyez encore sur Retour pour quitter CEFS TV</string>
+</resources>
