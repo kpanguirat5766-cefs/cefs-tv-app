@@ -28,7 +28,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.9"
+          gradle-version: "8.11.1"
 
       - name: Compiler l'APK
         env:
@@ -37,8 +37,9 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           ARGS="-Pcefs.versionCode=${{ github.run_number }}"
           if [ -n "$CEFS_URL" ]; then ARGS="$ARGS -Pcefs.url=$CEFS_URL"; fi
-          gradle --no-daemon assembleRelease $ARGS
+          gradle --no-daemon assembleRelease bundleRelease $ARGS
           cp app/build/outputs/apk/release/app-release.apk "CEFS-TV.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "CEFS-TV-PlayStore.aab"
 
       - name: Publier l'APK au téléchargement
         uses: softprops/action-gh-release@v2
@@ -48,5 +49,7 @@ jobs:
           body: |
             Application Android CEFS TV.
             Téléchargez CEFS-TV.apk ci-dessous, ouvrez-le sur votre téléphone et autorisez l'installation.
-          files: CEFS-TV.apk
+          files: |
+            CEFS-TV.apk
+            CEFS-TV-PlayStore.aab
           make_latest: true

@@ -5,11 +5,14 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.window.OnBackInvokedDispatcher;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -47,6 +50,28 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Android 15+ : l'affichage va jusqu'aux bords, on garde le contenu hors des barres du système.
+        final View root = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            if (customView != null) { v.setPadding(0, 0, 0, 0); return insets; }
+            int l, t, r, b;
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets i = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                l = i.left; t = i.top; r = i.right; b = i.bottom;
+            } else {
+                l = insets.getSystemWindowInsetLeft(); t = insets.getSystemWindowInsetTop();
+                r = insets.getSystemWindowInsetRight(); b = insets.getSystemWindowInsetBottom();
+            }
+            v.setPadding(l, t, r, b);
+            return insets;
+        });
+
+        // Android 13+ : bouton Retour (obligatoire à partir d'Android 16).
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
+        }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         web = findViewById(R.id.web);
@@ -63,7 +88,7 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setSupportMultipleWindows(false);
-        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.3");
+        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.4");
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
@@ -186,6 +211,7 @@ public class MainActivity extends Activity {
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0).requestApplyInsets();
         }
 
         @Override
@@ -240,16 +266,21 @@ public class MainActivity extends Activity {
         if (customCallback != null) customCallback.onCustomViewHidden();
         customCallback = null;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0).requestApplyInsets();
     }
 
     @Override
     public void onBackPressed() {
+        handleBack();
+    }
+
+    private void handleBack() {
         if (customView != null) {
             exitFullscreen();
         } else if (web.canGoBack() && !mainFrameFailed) {
             web.goBack();
         } else if (SystemClock.uptimeMillis() - lastBackPress < 2000) {
-            super.onBackPressed();
+            finish();
         } else {
             lastBackPress = SystemClock.uptimeMillis();
             Toast.makeText(this, R.string.exit_hint, Toast.LENGTH_SHORT).show();

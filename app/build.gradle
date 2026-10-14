@@ -7,12 +7,12 @@ def cefsVersionCode = (project.findProperty('cefs.versionCode') ?: '1').toString
 
 android {
     namespace 'org.cefs.tv'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId 'org.cefs.tv'
         minSdk 24
-        targetSdk 34
+        targetSdk 36
         versionCode cefsVersionCode
         versionName "1.${cefsVersionCode}"
         resValue 'string', 'cefs_url', cefsUrl
