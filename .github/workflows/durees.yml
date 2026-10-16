@@ -1,0 +1,29 @@
+name: Mesurer la durée des vidéos
+
+on:
+  workflow_dispatch:
+
+jobs:
+  durees:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lire les durées sur YouTube
+        run: |
+          python3 - <<'PY'
+          import json, re, urllib.request
+          d = json.load(open("docs/data/tv.json"))
+          out = {}
+          for v in d["videos"]:
+              if v.get("src") != "youtube": continue
+              try:
+                  req = urllib.request.Request("https://www.youtube.com/watch?v=" + v["yt"] + "&hl=fr",
+                      headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+                               "Accept-Language": "fr-FR,fr;q=0.9", "Cookie": "CONSENT=YES+1"})
+                  html = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")
+                  m = re.search(r'"lengthSeconds":"(\d+)"', html) or re.search(r'"approxDurationMs":"(\d+)"', html)
+                  out[v["yt"]] = int(m.group(1)) if m and "lengthSeconds" in m.group(0) else (int(m.group(1))//1000 if m else 0)
+              except Exception as e:
+                  out[v["yt"]] = "ERR " + str(e)[:60]
+          print("DUREES=" + json.dumps(out))
+          PY
