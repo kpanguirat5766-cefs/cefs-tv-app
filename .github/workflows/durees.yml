@@ -13,22 +13,22 @@ jobs:
       - uses: actions/checkout@v4
       - name: Lire les durées sur YouTube
         run: |
+          pip install -q yt-dlp
           python3 - <<'PY'
-          import json, re, urllib.request
+          import json, subprocess
           d = json.load(open("docs/data/tv.json"))
           out = {}
           for v in d["videos"]:
               if v.get("src") != "youtube": continue
-              try:
-                  req = urllib.request.Request("https://www.youtube.com/watch?v=" + v["yt"] + "&hl=fr",
-                      headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-                               "Accept-Language": "fr-FR,fr;q=0.9", "Cookie": "CONSENT=YES+1"})
-                  html = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")
-                  m = re.search(r'"lengthSeconds":"(\d+)"', html) or re.search(r'"approxDurationMs":"(\d+)"', html)
-                  out[v["yt"]] = int(m.group(1)) if m and "lengthSeconds" in m.group(0) else (int(m.group(1))//1000 if m else 0)
-              except Exception as e:
-                  out[v["yt"]] = "ERR " + str(e)[:60]
-          print("DUREES=" + json.dumps(out))
+              x = 0
+              for client in ("default", "tv_embedded,web_embedded", "android_vr", "ios"):
+                  args = ["yt-dlp", "--skip-download", "--no-warnings", "--print", "%(duration)s"]
+                  if client != "default": args += ["--extractor-args", "youtube:player_client=" + client]
+                  r = subprocess.run(args + ["https://www.youtube.com/watch?v=" + v["yt"]], capture_output=True, text=True)
+                  try: x = int(float(r.stdout.strip().splitlines()[0]))
+                  except Exception: x = 0
+                  if x > 0: break
+              out[v["yt"]] = x
           json.dump(out, open("docs/data/durees.json", "w"), ensure_ascii=False, indent=1)
           n = 0
           for v in d["videos"]:
