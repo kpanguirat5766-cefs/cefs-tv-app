@@ -11,33 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Lire les durées sur YouTube
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Lire les durées avec le lecteur YouTube
         run: |
-          pip install -q yt-dlp
-          python3 - <<'PY'
-          import json, subprocess
-          d = json.load(open("docs/data/tv.json"))
-          out = {}
-          for v in d["videos"]:
-              if v.get("src") != "youtube": continue
-              x = 0
-              for client in ("default", "tv_embedded,web_embedded", "android_vr", "ios"):
-                  args = ["yt-dlp", "--skip-download", "--no-warnings", "--print", "%(duration)s"]
-                  if client != "default": args += ["--extractor-args", "youtube:player_client=" + client]
-                  r = subprocess.run(args + ["https://www.youtube.com/watch?v=" + v["yt"]], capture_output=True, text=True)
-                  try: x = int(float(r.stdout.strip().splitlines()[0]))
-                  except Exception: x = 0
-                  if x > 0: break
-              out[v["yt"]] = x
-          json.dump(out, open("docs/data/durees.json", "w"), ensure_ascii=False, indent=1)
-          n = 0
-          for v in d["videos"]:
-              x = out.get(v.get("yt"))
-              if isinstance(x, int) and x > 0 and v.get("dur") != x: v["dur"] = x; n += 1
-          if n:
-              import time; d["rev"] = int(time.time()*1000)
-              json.dump(d, open("docs/data/tv.json", "w"), ensure_ascii=False)
-          PY
+          npm install --no-save --no-audit --no-fund playwright@1.48.2
+          npx playwright install --with-deps chromium
+          node tools/durees.mjs
       - name: Enregistrer
         run: |
           git config user.name "CEFS TV"
