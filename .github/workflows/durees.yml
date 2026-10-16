@@ -3,6 +3,9 @@ name: Mesurer la durée des vidéos
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   durees:
     runs-on: ubuntu-latest
@@ -26,4 +29,18 @@ jobs:
               except Exception as e:
                   out[v["yt"]] = "ERR " + str(e)[:60]
           print("DUREES=" + json.dumps(out))
+          json.dump(out, open("docs/data/durees.json", "w"), ensure_ascii=False, indent=1)
+          n = 0
+          for v in d["videos"]:
+              x = out.get(v.get("yt"))
+              if isinstance(x, int) and x > 0 and v.get("dur") != x: v["dur"] = x; n += 1
+          if n:
+              import time; d["rev"] = int(time.time()*1000)
+              json.dump(d, open("docs/data/tv.json", "w"), ensure_ascii=False)
           PY
+      - name: Enregistrer
+        run: |
+          git config user.name "CEFS TV"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/data
+          git diff --cached --quiet || (git commit -m "Durées des vidéos mises à jour" && git push)
