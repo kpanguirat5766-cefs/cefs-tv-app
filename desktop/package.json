@@ -1,0 +1,25 @@
+{
+  "name": "cefs-tv",
+  "productName": "CEFS TV",
+  "version": "1.0.0",
+  "description": "CEFS TV — la chaîne de l'Apôtre Guirat Kpan",
+  "author": "Éditions CEFS",
+  "main": "main.js",
+  "scripts": { "dist": "electron-builder --win --publish never" },
+  "devDependencies": { "electron": "33.2.1", "electron-builder": "25.1.8" },
+  "build": {
+    "appId": "org.cefs.tv",
+    "productName": "CEFS TV",
+    "directories": { "buildResources": "assets", "output": "dist" },
+    "files": ["main.js", "assets/icon.png"],
+    "win": { "target": ["nsis"], "icon": "assets/icon.png" },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CEFS TV",
+      "artifactName": "CEFS-TV-PC.exe"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+name: Construire CEFS TV pour PC
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/**"
+      - ".github/workflows/pc.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Fabriquer le programme d'installation
+        working-directory: desktop
+        run: |
+          npm install --no-audit --no-fund
+          npm run dist
+      - name: Publier au téléchargement
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pc
+          name: CEFS TV pour PC (Windows)
+          body: |
+            CEFS TV pour ordinateur Windows.
+            Téléchargez CEFS-TV-PC.exe ci-dessous, ouvrez-le : CEFS TV s'installe et une icône apparaît sur le bureau.
+          files: desktop/dist/CEFS-TV-PC.exe
+          make_latest: false

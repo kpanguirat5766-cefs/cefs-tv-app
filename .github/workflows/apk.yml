@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths-ignore:
       - "docs/**"
+      - "desktop/**"
+      - ".github/workflows/pc.yml"
   workflow_dispatch:
     inputs:
       url:
