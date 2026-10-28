@@ -74,6 +74,13 @@ public class MainActivity extends Activity {
         }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        // Notifications : rappels des émissions et alertes de direct.
+        try { Rappels.demarrer(this); } catch (Exception ignored) {}
+        if (Build.VERSION.SDK_INT >= 33 && savedInstanceState == null
+                && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 7);
+        }
+
         web = findViewById(R.id.web);
         splash = findViewById(R.id.splash);
         error = findViewById(R.id.error);
@@ -88,7 +95,7 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setSupportMultipleWindows(false);
-        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.4");
+        s.setUserAgentString(s.getUserAgentString() + " CEFSTV/1.5");
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
