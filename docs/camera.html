@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Caméra du direct · CEFS TV</title>
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+:root{--bg:#110D1B;--ink:#F3EEFF;--muted:#B9AED6;--red:#D3352A}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.4 "Segoe UI",system-ui,sans-serif}
+body{display:flex;flex-direction:column;height:100dvh}
+header{display:flex;align-items:center;gap:10px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+header img{width:36px;height:36px;border-radius:9px}
+header b{font-size:17px}
+header small{display:block;color:var(--muted);font-size:13px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(211,53,42,.25);margin-left:auto;animation:p 1.4s infinite}
+@keyframes p{50%{opacity:.35}}
+main{flex:1;position:relative;min-height:0}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.ended{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px}
+.ended b{font-size:22px;display:block;margin-bottom:6px}
+footer{padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+#stop{width:100%;border:0;border-radius:12px;background:var(--red);color:#fff;font-family:inherit;font-weight:700;font-size:19px;line-height:1;padding:18px;cursor:pointer}
+#stop:disabled{opacity:.6}
+#msg{color:var(--muted);text-align:center;font-size:14px;margin-top:8px;min-height:1em}
+</style>
+</head>
+<body>
+<header><img src="icon.png" alt=""><div><b>Direct CEFS TV</b><small id="tt">Votre caméra est à l'antenne</small></div><span class="dot" id="dot"></span></header>
+<main id="main"></main>
+<footer><button id="stop" type="button">■ Arrêter le direct</button><div id="msg">Laissez cette page ouverte pendant tout le direct.</div></footer>
+<script>
+const P = new URLSearchParams(location.hash.slice(1));
+const v = +P.get("v") || 0, k = P.get("k") || "", key = P.get("key") || "";
+const TITLES = ["Émission en direct","Culte en direct","Prière en direct","Enseignement en direct","Émission spéciale","Veillée de prière"];
+const STATS = "https://abacus.jasoncameron.dev", NS = "cefstv-kpan";
+const $ = id => document.getElementById(id);
+function camera(){
+  const n = Math.floor(v/100), cam = "cefs"+n, pw = "p"+((n*7919)%1000003);
+  $("tt").textContent = (TITLES[v%100] || TITLES[0]) + " · à l'antenne";
+  const f = document.createElement("iframe");
+  f.allow = "camera; microphone; autoplay; fullscreen; display-capture";
+  f.src = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&label=CEFS_TV`;
+  $("main").appendChild(f);
+}
+function ended(text){
+  $("main").innerHTML = `<div class="ended"><div><b>Direct terminé</b>${text}</div></div>`;
+  $("dot").style.display = "none"; $("tt").textContent = "Hors antenne";
+  $("stop").hidden = true;
+}
+// Garder l'écran allumé pendant le direct
+async function awake(){ try{ if(navigator.wakeLock) await navigator.wakeLock.request("screen"); }catch(_){} }
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) awake(); });
+$("stop").addEventListener("click", async ()=>{
+  if(!confirm("Arrêter le direct maintenant ? La chaîne reprendra son programme.")) return;
+  $("stop").disabled = true; $("msg").textContent = "Arrêt en cours…";
+  let ok = false;
+  try{
+    const r = await fetch(`${STATS}/set/${NS}/${encodeURIComponent(key)}?value=0`, {method:"POST", headers:{Authorization:"Bearer "+k}, cache:"no-store"});
+    const j = await r.json().catch(()=>({})); ok = r.ok && +j.value === 0;
+  }catch(_){}
+  if(ok){ $("msg").textContent = ""; ended("La caméra est coupée. Tous les écrans reprennent le programme dans quelques secondes.<br><br>Vous pouvez fermer cette page."); }
+  else { $("stop").disabled = false; $("msg").textContent = "L'arrêt n'a pas fonctionné. Vérifiez la connexion Internet et réessayez."; }
+});
+if(v >= 1000 && k && key){ camera(); awake(); }
+else ended("Ce lien de caméra n'est pas valide. Relancez le direct depuis CEFS TV (bouton 🎥 Direct).");
+</script>
+</body>
+</html>

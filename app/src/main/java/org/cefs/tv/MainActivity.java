@@ -182,7 +182,10 @@ public class MainActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri uri = request.getUrl();
             String scheme = uri.getScheme();
-            if (("http".equals(scheme) || "https".equals(scheme)) && isInternal(uri)) {
+            // La page caméra du direct s'ouvre dans Chrome (caméra et micro du téléphone).
+            String path = uri.getPath();
+            if (("http".equals(scheme) || "https".equals(scheme)) && isInternal(uri)
+                    && !(path != null && path.endsWith("/camera.html"))) {
                 return false;
             }
             // YouTube, WhatsApp, téléphone, e-mail… s'ouvrent dans l'application adaptée.
