@@ -31,7 +31,7 @@ public class Direct extends JobService {
             try {
                 JSONObject d = Rappels.donnees(this);
                 JSONObject live = d.optJSONObject("live");
-                String yt = live != null && live.optBoolean("on") ? live.optString("yt", "") : "";
+                String yt = live != null && live.optBoolean("on") ? (live.optString("yt", "").isEmpty() ? live.optString("cam", "") : live.optString("yt", "")) : "";
                 String last = Rappels.prefs(this).getString("direct", "");
                 if (!yt.isEmpty() && !yt.equals(last)) {
                     String t = live.optString("title", "");
