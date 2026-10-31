@@ -30,7 +30,7 @@ footer{padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
 <body>
 <header><img src="icon.png" alt=""><div><b>Direct CEFS TV</b><small id="tt">Votre caméra est à l'antenne</small></div><span class="dot" id="dot"></span></header>
 <main id="main"></main>
-<footer><button id="stop" type="button">■ Arrêter le direct</button><div id="msg">Laissez cette page ouverte pendant tout le direct.</div></footer>
+<footer><button id="stop" type="button">■ Arrêter le direct</button><div id="msg">Laissez cette page ouverte pendant tout le direct.</div><a id="alt" target="_blank" rel="noopener" style="display:block;text-align:center;color:#B9AED6;font-size:14px;margin-top:6px">La caméra ne s'affiche pas ? Ouvrir la caméra dans un nouvel onglet</a></footer>
 <script>
 const P = new URLSearchParams(location.hash.slice(1));
 const v = +P.get("v") || 0, k = P.get("k") || "", key = P.get("key") || "";
@@ -42,6 +42,7 @@ function frame(){
   $("main").innerHTML = "";
   const f = document.createElement("iframe");
   f.allow = "camera *; microphone *; autoplay *; fullscreen *; display-capture *";
+  $("alt").href = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&label=CEFS_TV`;
   f.src = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&label=CEFS_TV`;
   $("main").appendChild(f);
 }
