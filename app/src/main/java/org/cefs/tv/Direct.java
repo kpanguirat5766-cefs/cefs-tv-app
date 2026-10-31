@@ -30,11 +30,31 @@ public class Direct extends JobService {
         new Thread(() -> {
             try {
                 JSONObject d = Rappels.donnees(this);
+                String yt = "", t = "";
+                String key = d.optString("liveKey", "");
+                if (!key.isEmpty()) {
+                    java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(
+                            "https://abacus.jasoncameron.dev/get/cefstv-kpan/" + key).openConnection();
+                    c.setConnectTimeout(8000); c.setReadTimeout(8000);
+                    try (java.io.InputStream in = c.getInputStream()) {
+                        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+                        byte[] buf = new byte[1024]; int n; while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                        long v = new JSONObject(out.toString("UTF-8")).optLong("value", 0);
+                        if (v > 0) {
+                            String[] T = {"Émission en direct", "Culte en direct", "Prière en direct", "Enseignement en direct", "Émission spéciale", "Veillée de prière"};
+                            int ti = v < 100 ? (int) v - 1 : (int) (v % 100);
+                            yt = String.valueOf(v); t = ti >= 0 && ti < T.length ? T[ti] : T[0];
+                        }
+                    } catch (Exception ignored) {
+                    } finally { c.disconnect(); }
+                }
                 JSONObject live = d.optJSONObject("live");
-                String yt = live != null && live.optBoolean("on") ? (live.optString("yt", "").isEmpty() ? live.optString("cam", "") : live.optString("yt", "")) : "";
+                if (yt.isEmpty() && live != null && live.optBoolean("on")) {
+                    yt = live.optString("yt", "").isEmpty() ? live.optString("cam", "") : live.optString("yt", "");
+                    t = live.optString("title", "");
+                }
                 String last = Rappels.prefs(this).getString("direct", "");
                 if (!yt.isEmpty() && !yt.equals(last)) {
-                    String t = live.optString("title", "");
                     Rappels.montrer(this, 20, "🔴 En direct maintenant sur CEFS TV",
                             (t.isEmpty() ? "Une émission en direct" : "« " + t + " »") + " — rejoignez-nous !");
                 }
