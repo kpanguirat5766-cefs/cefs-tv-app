@@ -37,13 +37,26 @@ const v = +P.get("v") || 0, k = P.get("k") || "", key = P.get("key") || "";
 const TITLES = ["Émission en direct","Culte en direct","Prière en direct","Enseignement en direct","Émission spéciale","Veillée de prière"];
 const STATS = "https://abacus.jasoncameron.dev", NS = "cefstv-kpan";
 const $ = id => document.getElementById(id);
-function camera(){
+function frame(){
   const n = Math.floor(v/100), cam = "cefs"+n, pw = "p"+((n*7919)%1000003);
-  $("tt").textContent = (TITLES[v%100] || TITLES[0]) + " · à l'antenne";
+  $("main").innerHTML = "";
   const f = document.createElement("iframe");
-  f.allow = "camera; microphone; autoplay; fullscreen; display-capture";
+  f.allow = "camera *; microphone *; autoplay *; fullscreen *; display-capture *";
   f.src = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&label=CEFS_TV`;
   $("main").appendChild(f);
+}
+/* Chrome doit d'abord donner l'accès caméra et micro à CETTE page, sinon la caméra reste bloquée dans le cadre */
+async function camera(){
+  $("tt").textContent = (TITLES[v%100] || TITLES[0]) + " · à l'antenne";
+  $("main").innerHTML = `<div class="ended"><div><b>📷 Activation de la caméra…</b>Si Chrome vous le demande, appuyez sur <b style="display:inline;font-size:inherit">Autoriser</b> pour la caméra et le micro.</div></div>`;
+  try{
+    const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+    s.getTracks().forEach(x=>x.stop());
+    frame();
+  }catch(e){
+    $("main").innerHTML = `<div class="ended"><div><b>Caméra bloquée</b>Chrome n'a pas donné l'accès à la caméra et au micro.<br><br>Touchez le cadenas 🔒 à gauche de l'adresse, puis <b style="display:inline;font-size:inherit">Autorisations</b> : mettez Caméra et Micro sur « Autoriser ».<br><br><button id="retry" type="button" style="border:0;border-radius:10px;background:#fff;color:#111;font:inherit;font-weight:700;padding:12px 18px">Réessayer</button></div></div>`;
+    $("retry").onclick = camera;
+  }
 }
 function ended(text){
   $("main").innerHTML = `<div class="ended"><div><b>Direct terminé</b>${text}</div></div>`;
