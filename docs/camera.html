@@ -44,8 +44,8 @@ function frame(){
   $("main").innerHTML = "";
   const f = document.createElement("iframe");
   f.allow = "camera *; microphone *; autoplay *; fullscreen *; display-capture *";
-  $("alt").href = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=1&width=1280&height=720&label=CEFS_TV`;
-  f.src = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=1&width=1280&height=720&label=CEFS_TV`;
+  $("alt").href = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=1&width=1280&height=720&fps=30&label=CEFS_TV`;
+  f.src = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=1&width=1280&height=720&fps=30&label=CEFS_TV`;
   $("main").appendChild(f);
   const tip = document.createElement("div"); tip.className = "turn"; tip.textContent = "↻ Tournez le téléphone à l'horizontale"; $("main").appendChild(tip);
 }
