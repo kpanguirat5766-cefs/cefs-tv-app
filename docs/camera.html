@@ -78,7 +78,12 @@ $("stop").addEventListener("click", async ()=>{
   if(ok){ $("msg").textContent = ""; ended("La caméra est coupée. Tous les écrans reprennent le programme dans quelques secondes.<br><br>Vous pouvez fermer cette page."); }
   else { $("stop").disabled = false; $("msg").textContent = "L'arrêt n'a pas fonctionné. Vérifiez la connexion Internet et réessayez."; }
 });
-if(v >= 1000 && k && key){ camera(); awake(); }
+if(/CEFSTV\//.test(navigator.userAgent)){
+  // Ancienne version de l'application : la caméra doit s'ouvrir dans Chrome
+  ended(`La caméra ne peut pas s'ouvrir dans cette version de l'application.<br><br><a href="https://github.com/kpanguirat5766-cefs/cefs-tv-app/releases/latest/download/CEFS-TV.apk" style="display:inline-block;background:#fff;color:#111;font-weight:700;padding:12px 18px;border-radius:10px;text-decoration:none">Installer la nouvelle version</a><br><br>Puis relancez le direct : la caméra s'ouvrira dans Chrome.`);
+  $("stop").hidden = false; $("dot").style.display = "";
+  $("tt").textContent = "Mise à jour nécessaire";
+} else if(v >= 1000 && k && key){ camera(); awake(); }
 else ended("Ce lien de caméra n'est pas valide. Relancez le direct depuis CEFS TV (bouton 🎥 Direct).");
 </script>
 </body>
