@@ -1,0 +1,37 @@
+== create
+{"admin_key":"(cache)","key":"essai-1234729259","namespace":"cefstv-kpan","value":0}
+== GET set/cefstv-kpan/essai-1234729259?value=123456
+<a href="https://jasoncameron.dev/abacus/">Permanent Redirect</a>.
+
+
+== POST set/cefstv-kpan/essai-1234729259?value=123456
+{"value":123456}
+== GET update/cefstv-kpan/essai-1234729259?value=5
+<a href="https://jasoncameron.dev/abacus/">Permanent Redirect</a>.
+
+
+== POST update/cefstv-kpan/essai-1234729259?value=5
+{"value":123461}
+== GET reset/cefstv-kpan/essai-1234729259
+<a href="https://jasoncameron.dev/abacus/">Permanent Redirect</a>.
+
+
+== POST reset/cefstv-kpan/essai-1234729259
+{"value":0}
+== set no auth
+{"error":"Token is required, please provide a token in the format of a Bearer token header or ?token=ADMIN_TOKEN"}
+
+== get
+{"value":0}
+== create again
+{"error":"Key already exists, please use a different key."}
+== preflight
+HTTP/2 204 
+access-control-allow-headers: Origin,Content-Length,Content-Type,Authorization
+access-control-allow-methods: GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS
+access-control-allow-origin: *
+access-control-max-age: 43200
+
+== channel
+      1 "externalId":"UCnvTy82aj_ccPjYH68fwCBQ"
+     32 channel/UCnvTy82aj_ccPjYH68fwCBQ
