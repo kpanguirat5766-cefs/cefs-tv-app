@@ -38,4 +38,8 @@ for e in root.findall("a:entry", ns):
 if added:
     d["rev"] = int(time.time() * 1000)
     json.dump(d, open(DATA, "w", encoding="utf-8"), ensure_ascii=False)
+entries = root.findall("a:entry", ns)
+latest = entries[0].findtext("a:title", namespaces=ns) if entries else "-"
+open("tools/import-youtube.txt", "w", encoding="utf-8").write(
+    f"Flux lu : {len(entries)} vidéos récentes sur la chaîne\nDernière : {latest}\nAjoutées cette fois : {len(added)}\n")
 print("ajoutées :", added)
