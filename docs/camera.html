@@ -42,8 +42,8 @@ function frame(){
   $("main").innerHTML = "";
   const f = document.createElement("iframe");
   f.allow = "camera *; microphone *; autoplay *; fullscreen *; display-capture *";
-  $("alt").href = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=0&width=1920&height=1080&label=CEFS_TV`;
-  f.src = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=0&width=1920&height=1080&label=CEFS_TV`;
+  $("alt").href = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=1&width=1280&height=720&label=CEFS_TV`;
+  f.src = `https://vdo.ninja/?push=${encodeURIComponent(cam)}&password=${encodeURIComponent(pw)}&webcam&autostart&quality=1&width=1280&height=720&label=CEFS_TV`;
   $("main").appendChild(f);
 }
 /* Chrome doit d'abord donner l'accès caméra et micro à CETTE page, sinon la caméra reste bloquée dans le cadre */
