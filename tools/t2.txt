@@ -1,0 +1,24 @@
+== create
+{"admin_key":"(cache)","key":"essai-111042565","namespace":"cefstv-kpan","value":0}
+== set
+<a href="https://jasoncameron.dev/abacus/">Permanent Redirect</a>.
+
+
+== set no auth
+<a href="https://jasoncameron.dev/abacus/">Permanent Redirect</a>.
+
+
+== get
+{"value":0}
+== create again
+{"error":"Key already exists, please use a different key."}
+== preflight
+HTTP/2 204 
+access-control-allow-headers: Origin,Content-Length,Content-Type,Authorization
+access-control-allow-methods: GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS
+access-control-allow-origin: *
+access-control-max-age: 43200
+
+== channel
+      1 "externalId":"UCnvTy82aj_ccPjYH68fwCBQ"
+     32 channel/UCnvTy82aj_ccPjYH68fwCBQ
