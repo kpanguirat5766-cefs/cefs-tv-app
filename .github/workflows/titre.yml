@@ -1,0 +1,17 @@
+name: Titre
+on:
+  workflow_dispatch:
+    inputs:
+      id:
+        required: true
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -s -m 20 "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${{ github.event.inputs.id }}&format=json" > tools/titre.json
+          git config user.name "CEFS TV"; git config user.email "actions@users.noreply.github.com"
+          git add tools/titre.json; git commit -m titre && git push
