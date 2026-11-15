@@ -1,0 +1,44 @@
+name: Lire une chaîne
+on:
+  workflow_dispatch:
+    inputs:
+      handle:
+        required: true
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          H: ${{ github.event.inputs.handle }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, urllib.request, urllib.parse
+          UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "fr-FR,fr;q=0.9", "Cookie": "CONSENT=YES+1"}
+          def get(u):
+              try: return urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=30).read().decode("utf-8", "ignore")
+              except Exception as e: return ""
+          h = os.environ["H"].strip().lstrip("@")
+          out = {"handle": h, "channel": "", "videos": []}
+          ids = []
+          for tab in ("videos", "streams", "shorts", ""):
+              html = get(f"https://www.youtube.com/@{h}/{tab}")
+              if not out["channel"]:
+                  m = re.search(r'"externalId":"(UC[\w-]{22})"', html) or re.search(r'channel/(UC[\w-]{22})', html)
+                  if m: out["channel"] = m.group(1)
+              for m in re.finditer(r'"videoId":"([\w-]{11})"', html):
+                  if m.group(1) not in ids: ids.append(m.group(1))
+          if out["channel"]:
+              x = get("https://www.youtube.com/feeds/videos.xml?channel_id=" + out["channel"])
+              for vid in re.findall(r"<yt:videoId>([\w-]{11})</yt:videoId>", x):
+                  if vid not in ids: ids.append(vid)
+          for vid in ids[:40]:
+              t = get("https://www.youtube.com/oembed?format=json&url=" + urllib.parse.quote("https://www.youtube.com/watch?v=" + vid))
+              try: j = json.loads(t); out["videos"].append({"yt": vid, "title": j.get("title", ""), "author": j.get("author_name", "")})
+              except Exception: out["videos"].append({"yt": vid, "title": "", "author": ""})
+          json.dump(out, open("tools/chaine.json", "w"), ensure_ascii=False, indent=1)
+          PY
+          git config user.name "CEFS TV"; git config user.email "actions@users.noreply.github.com"
+          git add tools/chaine.json; git commit -m "lecture chaîne" && git pull --rebase -q && git push
