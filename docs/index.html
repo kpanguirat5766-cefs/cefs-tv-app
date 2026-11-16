@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1793815344";
+const BUILD = "1794814292";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -1020,7 +1020,19 @@ $("vgrid").addEventListener("click",e=>{ const b=e.target.closest("[data-scroll]
   const s=b.closest(".vrow").querySelector(".vstrip"); s.scrollBy({left:(+b.dataset.scroll)*s.clientWidth*0.9, behavior:"smooth"}); });
 function renderAll(){ renderNow(); renderDays(); renderGrid(); renderVideos(); if($("adminDlg").open) renderAdmin(); if(watching) tune(); }
 
-function kick(){ soundOn(); try{ ytMain && ytMain.playVideo(); }catch(_){} $("tapPlay").hidden = true; if(!ytMain || ytState === -1){ onItem = null; tune(); } }
+/* Garde-fou : si l'image ne démarre pas (réseau lent, YouTube non chargé), on propose de relancer */
+let stallSince = null;
+setInterval(()=>{
+  const bad = watching && !$("ytWrap").hidden && ytState !== 1 && !document.hidden;
+  if(!bad){ stallSince = null; return; }
+  stallSince = stallSince || Date.now();
+  if(Date.now() - stallSince > 15000 && $("tapPlay").hidden){
+    $("tapPlay").textContent = (window.YT && YT.Player) ? "▶ Lancer la chaîne" : "Connexion lente — ▶ Réessayer";
+    $("tapPlay").hidden = false;
+  }
+}, 5000);
+function kick(){
+  if(!(window.YT && YT.Player)){ location.reload(); return; } soundOn(); try{ ytMain && ytMain.playVideo(); }catch(_){} $("tapPlay").hidden = true; if(!ytMain || ytState === -1){ onItem = null; tune(); } }
 $("tapPlay").addEventListener("click", kick);
 $("shield").addEventListener("click", ()=>{ if(ytState !== 1) kick(); });
 $("fsBtn").addEventListener("click",()=>{ const s=$("screen");
