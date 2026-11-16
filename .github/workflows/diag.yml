@@ -1,0 +1,27 @@
+name: Diagnostic
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 - > tools/diag.txt 2>&1 <<'PY'
+          import json, urllib.request, urllib.parse
+          d = json.load(open("docs/data/tv.json"))
+          def get(u):
+              try:
+                  r = urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"}), timeout=20); return r.status, r.read().decode("utf-8","ignore")[:200]
+              except urllib.error.HTTPError as e: return e.code, ""
+              except Exception as e: return 0, str(e)[:80]
+          print("LIVE", get("https://abacus.jasoncameron.dev/get/cefstv-kpan/" + d["liveKey"]))
+          for v in d["videos"]:
+              if v.get("src") != "youtube": continue
+              s, _ = get("https://www.youtube.com/oembed?format=json&url=" + urllib.parse.quote("https://www.youtube.com/watch?v=" + v["yt"]))
+              print(v["id"], v["yt"], s, v["title"][:40])
+          print("SITE", get("https://kpanguirat5766-cefs.github.io/cefs-tv-app/")[0])
+          PY
+          git config user.name "CEFS TV"; git config user.email "actions@users.noreply.github.com"
+          git add tools/diag.txt; git commit -m diag && git pull --rebase -q && git push
