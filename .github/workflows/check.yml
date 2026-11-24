@@ -1,0 +1,16 @@
+name: Vérifier le compteur
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          K=$(python3 -c "import json;print(json.load(open('docs/data/tv.json'))['liveKey'])")
+          { echo "GET $(curl -s -m 20 https://abacus.jasoncameron.dev/get/cefstv-kpan/$K)";
+            echo "INFO $(curl -s -m 20 https://abacus.jasoncameron.dev/info/cefstv-kpan/$K)";
+            echo "CREATE-TEST $(curl -s -m 20 "https://abacus.jasoncameron.dev/create/cefstv-kpan/test-$RANDOM$RANDOM?initializer=0" | sed 's/"admin_key":"[^"]*"/"admin_key":"…"/')"; } > tools/check.txt
+          git config user.name "CEFS TV"; git config user.email "actions@users.noreply.github.com"
+          git add tools/check.txt; git commit -m check && git pull --rebase -q && git push
