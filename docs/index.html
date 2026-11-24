@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1795539328";
+const BUILD = "1795540598";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -962,12 +962,12 @@ $("liveStart").addEventListener("click", ()=>{
 $("camStart").addEventListener("click", ()=>{
   const t = +$("liveTitle").value || 0;
   const n = 1000000 + Math.floor(Math.random()*8999999999), v = n*100 + t;
-  const hasKey = !!store.get("cefs-livekey");
-  // Navigateur : on ouvre l'onglet tout de suite (sinon il serait bloqué). Application : Chrome s'ouvre après l'enregistrement.
-  const w = IN_APP ? null : window.open(hasKey ? camPage(v) : "about:blank", "_blank");
+  const hasKey = !!store.get("cefs-livekey") && store.get("cefs-livekey-for") === state.liveKey;
+  // La caméra s'ouvre tout de suite, pendant que le direct s'enregistre (plus d'attente).
+  const w = IN_APP ? (hasKey ? (window.open(camPage(v), "_blank"), true) : null) : window.open(hasKey ? camPage(v) : "about:blank", "_blank");
   setRemoteLive(v, "Direct caméra lancé : les spectateurs le voient en moins d'une minute").then(ok=>{
-    if(!ok){ try{ w && w.close(); }catch(_){} return; }
-    if(IN_APP) window.open(camPage(v), "_blank");
+    if(!ok){ try{ w && w.close && w.close(); }catch(_){} return; }
+    if(IN_APP){ if(!hasKey) window.open(camPage(v), "_blank"); return; }
     else if(w && !hasKey){ try{ w.location.href = new URL(camPage(v), location.href).href; }catch(_){} }
     else if(!w) $("camLink").hidden = false;
   });

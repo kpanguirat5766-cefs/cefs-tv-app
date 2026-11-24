@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Caméra du direct · CEFS TV</title>
+<link rel="preconnect" href="https://vdo.ninja" crossorigin>
+<link rel="dns-prefetch" href="https://wss.vdo.ninja">
 <link rel="icon" type="image/png" href="icon.png">
 <style>
 :root{--bg:#110D1B;--ink:#F3EEFF;--muted:#B9AED6;--red:#D3352A}
@@ -54,6 +56,9 @@ async function camera(){
   $("tt").textContent = (TITLES[v%100] || TITLES[0]) + " · à l'antenne";
   $("main").innerHTML = `<div class="ended"><div><b>📷 Activation de la caméra…</b>Si Chrome vous le demande, appuyez sur <b style="display:inline;font-size:inherit">Autoriser</b> pour la caméra et le micro.</div></div>`;
   try{
+    // Accès déjà autorisé : on lance tout de suite la diffusion, sans étape en plus
+    try{ const [pc, pm] = await Promise.all([navigator.permissions.query({name:"camera"}), navigator.permissions.query({name:"microphone"})]);
+      if(pc.state === "granted" && pm.state === "granted"){ frame(); return; } }catch(_){}
     const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
     s.getTracks().forEach(x=>x.stop());
     frame();
