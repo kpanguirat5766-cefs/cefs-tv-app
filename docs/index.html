@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1795540598";
+const BUILD = "1795541624";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -977,12 +977,26 @@ function endLive(){ if(confirm("Arrêter le direct maintenant ? La chaîne repre
 
 /* Tous les écrans vérifient le direct toutes les 15 secondes */
 let livePolled = false;   // au premier chargement, pas de carton
+/* Direct caméra : la page caméra envoie un signal toutes les 10 s. Sans signal pendant 30 s, le direct est terminé. */
+let beatVal = null, beatAt = 0, liveSeenAt = 0, deadLive = 0;
+async function getVal(k){ const r = await fetch(`${STATS}/get/${NS}/${encodeURIComponent(k)}`, {cache:"no-store"}); const j = await r.json().catch(()=>({})); return +(j && j.value) || 0; }
 async function pollLive(){
   if(!state.liveKey) return;
-  try{ const r = await fetch(`${STATS}/get/${NS}/${encodeURIComponent(state.liveKey)}`, {cache:"no-store"}); const j = await r.json(); const v = +(j && j.value) || 0;
-    if(v !== remoteLive){ if(!livePolled){ remoteLive = v; renderNow(); renderGrid(); if(watching){ onItem = null; tune(); } } else applyRemote(v); } livePolled = true; }catch(_){}
+  try{
+    let v = await getVal(state.liveKey);
+    const L = decodeLive(v);
+    if(L && L.kind === "cam"){
+      const now = Date.now();
+      if(v !== remoteLive && v !== deadLive){ liveSeenAt = now; beatVal = null; }
+      const b = await getVal(state.liveKey + "-b");
+      if(b !== beatVal){ beatVal = b; beatAt = now; }
+      if(v === deadLive || (now - liveSeenAt > 40000 && now - beatAt > 30000)){ deadLive = v; v = 0; }   // caméra fermée ou coupée
+    }
+    if(v !== remoteLive){ if(!livePolled){ remoteLive = v; renderNow(); renderGrid(); if(watching){ onItem = null; tune(); } } else applyRemote(v); }
+    livePolled = true;
+  }catch(_){}
 }
-setInterval(pollLive, 15000);
+setInterval(pollLive, 5000);
 $("liveNow").addEventListener("click", e=>{ e.preventDefault(); window.scrollTo({top:0,behavior:"smooth"}); soundOn(); watching = true; tune(); });
 
 /* ===== Partage ===== */

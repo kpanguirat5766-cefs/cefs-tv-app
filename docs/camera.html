@@ -72,6 +72,12 @@ function ended(text){
   $("dot").style.display = "none"; $("tt").textContent = "Hors antenne";
   $("stop").hidden = true;
 }
+/* Signal « caméra active » toutes les 10 s : sans lui, les écrans reprennent seuls le programme */
+let live = true;
+function beat(){ if(live) fetch(`${STATS}/hit/${NS}/${encodeURIComponent(key)}-b`, {cache:"no-store", keepalive:true}).catch(()=>{}); }
+/* Page fermée : arrêt immédiat du direct */
+window.addEventListener("pagehide", ()=>{ if(!live) return; live = false;
+  try{ fetch(`${STATS}/set/${NS}/${encodeURIComponent(key)}?value=0`, {method:"POST", headers:{Authorization:"Bearer "+k}, keepalive:true}); }catch(_){} });
 // Garder l'écran allumé pendant le direct
 async function awake(){ try{ if(navigator.wakeLock) await navigator.wakeLock.request("screen"); }catch(_){} }
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) awake(); });
@@ -83,7 +89,7 @@ $("stop").addEventListener("click", async ()=>{
     const r = await fetch(`${STATS}/set/${NS}/${encodeURIComponent(key)}?value=0`, {method:"POST", headers:{Authorization:"Bearer "+k}, cache:"no-store"});
     const j = await r.json().catch(()=>({})); ok = r.ok && +j.value === 0;
   }catch(_){}
-  if(ok){ $("msg").textContent = ""; ended("La caméra est coupée. Tous les écrans reprennent le programme dans quelques secondes.<br><br>Vous pouvez fermer cette page."); }
+  if(ok){ live = false; $("msg").textContent = ""; ended("La caméra est coupée. Tous les écrans reprennent le programme dans quelques secondes.<br><br>Vous pouvez fermer cette page."); }
   else { $("stop").disabled = false; $("msg").textContent = "L'arrêt n'a pas fonctionné. Vérifiez la connexion Internet et réessayez."; }
 });
 if(/CEFSTV\//.test(navigator.userAgent)){
@@ -91,7 +97,7 @@ if(/CEFSTV\//.test(navigator.userAgent)){
   ended(`La caméra ne peut pas s'ouvrir dans cette version de l'application.<br><br><a href="https://github.com/kpanguirat5766-cefs/cefs-tv-app/releases/latest/download/CEFS-TV.apk" style="display:inline-block;background:#fff;color:#111;font-weight:700;padding:12px 18px;border-radius:10px;text-decoration:none">Installer la nouvelle version</a><br><br>Puis relancez le direct : la caméra s'ouvrira dans Chrome.`);
   $("stop").hidden = false; $("dot").style.display = "";
   $("tt").textContent = "Mise à jour nécessaire";
-} else if(v >= 1000 && k && key){ camera(); awake(); }
+} else if(v >= 1000 && k && key){ camera(); awake(); beat(); setInterval(beat, 10000); }
 else ended("Ce lien de caméra n'est pas valide. Relancez le direct depuis CEFS TV (bouton 🎥 Direct).");
 </script>
 </body>
