@@ -1,3 +1,0 @@
-GET {"value":0}
-INFO {"exists":true,"expires_in":14511935,"expires_str":"4031h5m35s","full_key":"K:cefstv-kpan:direct-a9fcf26d0b29","is_genuine":false,"value":0}
-CREATE-TEST {"admin_key":"…","key":"test-1561228270","namespace":"cefstv-kpan","value":0}
