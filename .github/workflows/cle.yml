@@ -1,0 +1,26 @@
+name: Nouvelle clé du direct
+on:
+  workflow_dispatch:
+    inputs:
+      key:
+        required: true
+      pub:
+        required: true
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          K: ${{ github.event.inputs.key }}
+          PUB: ${{ github.event.inputs.pub }}
+        run: |
+          echo "$PUB" | base64 -d > pub.pem
+          R=$(curl -s -m 20 "https://abacus.jasoncameron.dev/create/cefstv-kpan/$K?initializer=0")
+          A=$(echo "$R" | python3 -c "import sys,json;print(json.load(sys.stdin).get('admin_key',''))")
+          printf %s "$A" | openssl pkeyutl -encrypt -pubin -inkey pub.pem | base64 -w0 > tools/k.txt
+          rm pub.pem
+          git config user.name "CEFS TV"; git config user.email "actions@users.noreply.github.com"
+          git add tools/k.txt; git commit -m "clé" && git pull --rebase -q && git push
