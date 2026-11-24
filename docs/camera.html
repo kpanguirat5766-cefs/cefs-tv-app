@@ -78,6 +78,22 @@ function beat(){ if(live) fetch(`${STATS}/hit/${NS}/${encodeURIComponent(key)}-b
 /* Page fermée : arrêt immédiat du direct */
 window.addEventListener("pagehide", ()=>{ if(!live) return; live = false;
   try{ fetch(`${STATS}/set/${NS}/${encodeURIComponent(key)}?value=0`, {method:"POST", headers:{Authorization:"Bearer "+k}, keepalive:true}); }catch(_){} });
+/* Après le direct : retour à l'écran principal (l'application CEFS TV sur Android, sinon la chaîne) */
+function goHome(){
+  const home = new URL("./", location.href).href;
+  setTimeout(()=>{
+    if(/Android/i.test(navigator.userAgent)){
+      location.href = "intent://" + home.replace(/^https:\/\//, "") + "#Intent;scheme=https;package=org.cefs.tv;S.browser_fallback_url=" + encodeURIComponent(home) + ";end";
+      setTimeout(()=>{ location.replace(home); }, 2500);
+    } else location.replace(home);
+  }, 1500);
+}
+/* Direct arrêté depuis un autre écran (bouton Direct de l'application) : on coupe aussi la caméra */
+setInterval(async ()=>{
+  if(!live) return;
+  try{ const r = await fetch(`${STATS}/get/${NS}/${encodeURIComponent(key)}`, {cache:"no-store"}); const j = await r.json();
+    if(+j.value !== v){ live = false; ended("Le direct a été arrêté. Retour à CEFS TV…"); goHome(); } }catch(_){}
+}, 5000);
 // Garder l'écran allumé pendant le direct
 async function awake(){ try{ if(navigator.wakeLock) await navigator.wakeLock.request("screen"); }catch(_){} }
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) awake(); });
@@ -89,7 +105,7 @@ $("stop").addEventListener("click", async ()=>{
     const r = await fetch(`${STATS}/set/${NS}/${encodeURIComponent(key)}?value=0`, {method:"POST", headers:{Authorization:"Bearer "+k}, cache:"no-store"});
     const j = await r.json().catch(()=>({})); ok = r.ok && +j.value === 0;
   }catch(_){}
-  if(ok){ live = false; $("msg").textContent = ""; ended("La caméra est coupée. Tous les écrans reprennent le programme dans quelques secondes.<br><br>Vous pouvez fermer cette page."); }
+  if(ok){ live = false; $("msg").textContent = ""; ended("La caméra est coupée. Retour à CEFS TV…"); goHome(); }
   else { $("stop").disabled = false; $("msg").textContent = "L'arrêt n'a pas fonctionné. Vérifiez la connexion Internet et réessayez."; }
 });
 if(/CEFSTV\//.test(navigator.userAgent)){
