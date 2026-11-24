@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1795509124";
+const BUILD = "1795539328";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -876,7 +876,7 @@ function openLive(){
   const cam = on && L.kind === "cam"; $("camLink").hidden = !cam; if(cam) $("camLink").href = camPage(remoteLive);
   $("liveStop").disabled = !on; $("liveStop").hidden = !on;
   const k = store.get("cefs-livekey");
-  $("liveKeyInfo").innerHTML = k ? `Clé du direct de cet appareil : <b style="user-select:all">${esc(k)}</b> — à recopier si vous lancez un direct depuis un autre appareil.` : "";
+  $("liveKeyInfo").textContent = (k && store.get("cefs-livekey-for") === state.liveKey) ? "✓ Code du direct enregistré sur cet appareil." : "Le code du direct vous sera demandé au premier lancement.";
   $("liveDlg").showModal();
 }
 $("liveAdm").addEventListener("click", ()=>{
@@ -916,15 +916,27 @@ async function openStats(){
 $("statsAdm").addEventListener("click", ()=>{ if(isUnlocked()) return openStats(); afterPin = openStats; openPin(state.pin ? "check" : "create"); });
 $("statsRefresh").addEventListener("click", openStats);
 
-async function liveAdminKey(){
-  let k = store.get("cefs-livekey"); if(k) return k;
+/* La clé secrète du direct est protégée par le « code du direct » choisi par l'Apôtre */
+async function unlockLiveKey(code){
+  const L = state.liveLock; if(!L || !code) return "";
   try{
-    const r = await fetch(`${STATS}/create/${NS}/${encodeURIComponent(state.liveKey)}?initializer=0`, {cache:"no-store"});
-    const j = await r.json(); if(j && j.admin_key){ store.set("cefs-livekey", j.admin_key); return j.admin_key; }
-  }catch(_){}
-  k = (prompt("Collez la clé du direct (affichée dans la fenêtre Direct de l'appareil qui a lancé le premier direct) :")||"").trim();
-  if(k) store.set("cefs-livekey", k);
-  return k;
+    const u = s => Uint8Array.from(atob(s), c=>c.charCodeAt(0)), enc = new TextEncoder();
+    const base = await crypto.subtle.importKey("raw", enc.encode(code), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:u(L.salt), iterations:L.iter||300000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+    return new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:u(L.iv)}, key, u(L.ct)));
+  }catch(_){ return ""; }
+}
+async function liveAdminKey(){
+  let k = store.get("cefs-livekey");
+  if(k && store.get("cefs-livekey-for") === state.liveKey) return k;
+  store.del("cefs-livekey");
+  for(let i=0; i<3; i++){
+    const code = (prompt(i ? "Code incorrect. Tapez le code du direct :" : "Tapez le code du direct :")||"").trim();
+    if(!code) return "";
+    k = await unlockLiveKey(code);
+    if(k){ store.set("cefs-livekey", k); store.set("cefs-livekey-for", state.liveKey); return k; }
+  }
+  return "";
 }
 async function setRemoteLive(v, okMsg){
   $("liveErr").textContent = "";
@@ -940,7 +952,7 @@ async function setRemoteLive(v, okMsg){
   }catch(_){}
   ["liveStart","camStart"].forEach(id=>$(id).disabled = false);
   if(ok){ applyRemote(v); toast(okMsg); if($("liveDlg").open) openLive(); }
-  else { $("liveErr").textContent = noKey ? "Cet appareil n'a pas la clé du direct : recopiez-la depuis l'appareil qui a lancé le premier direct (elle s'affiche en bas de cette fenêtre)." : "Le direct n'a pas pu être enregistré. Vérifiez la connexion Internet et réessayez."; $("liveStop").disabled = !liveOn(); }
+  else { $("liveErr").textContent = noKey ? "Le code du direct n'a pas été accepté. Réessayez avec le bon code." : "Le direct n'a pas pu être enregistré. Vérifiez la connexion Internet et réessayez."; $("liveStop").disabled = !liveOn(); }
   return ok;
 }
 $("liveStart").addEventListener("click", ()=>{
