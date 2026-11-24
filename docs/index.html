@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1795507934";
+const BUILD = "1795508947";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -604,7 +604,7 @@ window.onYouTubeIframeAPIReady = () => ytReadyResolve();
 (function(){ const s=document.createElement("script"); s.src="https://www.youtube.com/iframe_api"; document.head.appendChild(s); })();
 let ytMain = null, ytMainReady = null, ytState = -1, ytWatch = null, ytErrN = 0;
 /* Vidéo illisible (supprimée, privée, refusée) : on passe à la suivante au lieu de rester bloqué */
-function onYtError(e){ ytErrN++; if(ytErrN > 25) return; clearTimeout(ytWatch); setTimeout(onClipEnded, 1500); }
+function onYtError(e){ if(adActive){ endAd(); return; } ytErrN++; if(ytErrN > 25) return; clearTimeout(ytWatch); setTimeout(onClipEnded, 1500); }
 /* Gardien : si la vidéo ne démarre pas, on relance, puis on propose un bouton */
 function watchStart(){
   clearTimeout(ytWatch); $("tapPlay").hidden = true;
@@ -724,6 +724,38 @@ function renderNow(){
 
 /* ===== Écran : la chaîne en continu ===== */
 let watching = false, tuneT = null, onItem = null, seq = null, seqN = 0;
+/* ===== Espace publicitaire : toutes les 15 minutes, jingle puis « Les ouvrages de l'Apôtre Guirat Kpan » ===== */
+const AD_VIDEO = "c2", AD_EVERY = 15;
+let adActive = false, adBack = null, adSafety = null, adLast = "";
+function startAd(){
+  if(!watching || adActive || liveOn() || !ytMain || $("ytWrap").hidden) return;
+  const ad = vid(AD_VIDEO); if(!ad || !ad.yt) return;
+  const {day,s} = nowAbj(), L = locate(day,s);
+  if(L.fx) return;                                   // pas de publicité pendant les rendez-vous (films, documentaires, mission)
+  let pos = 0, cur = ""; try{ pos = ytMain.getCurrentTime()||0; cur = ytMain.getVideoData().video_id; }catch(_){}
+  if(cur === ad.yt) return;
+  const p = plan(day), idx = seq && seq.d===day ? seq.idx : (L.idx!=null && L.idx>=0 ? L.idx : 0);
+  adBack = {d:day, idx, pos}; adActive = true; clearTimeout(tuneT);
+  try{ ytMain.pauseVideo(); }catch(_){}
+  bumper("Espace publicitaire", "Les ouvrages de l'Apôtre Guirat Kpan", 5000);
+  setTimeout(()=>{ if(!adActive) return;
+    $("lT").textContent = ad.title; $("lH").textContent = "Publicité";
+    ytState = -1; try{ ytMain.loadVideoById({videoId:ad.yt, startSeconds:0}); }catch(_){ endAd(); } }, 5000);
+  adSafety = setTimeout(endAd, 8*60*1000);           // sécurité : jamais plus de 8 minutes
+}
+function endAd(){
+  if(!adActive) return; adActive = false; clearTimeout(adSafety);
+  const B = adBack; adBack = null;
+  if(B && !liveOn()){ const {s} = nowAbj(); seq = {d:B.d, idx:B.idx, t0: s - B.pos, n:++seqN, skipFx:null}; }  // reprise là où le programme s'était arrêté
+  bumper("CEFS TV", "Reprise du programme", 2500);
+  onItem = null; tune();
+}
+setInterval(()=>{
+  const n = new Date(), m = n.getUTCMinutes();
+  if(m % AD_EVERY !== 0 || n.getUTCSeconds() > 40) return;
+  const k = n.toISOString().slice(0,16); if(k === adLast) return; adLast = k;
+  startAd();
+}, 10000);
 const tv = $("tv");
 function showLayer(which){
   $("unmute").hidden = !(muted && (which==="yt" || which==="mp4"));
@@ -736,6 +768,7 @@ function showLayer(which){
 function tune(){
   clearTimeout(tuneT);
   if(!watching) return;
+  if(adActive){ if(liveOn()){ adActive = false; clearTimeout(adSafety); } else return; }
   const {day,s} = nowAbj(); let L = locate(day,s);
   /* Enchaînement : après la fin d'une vidéo, la suivante de la liste démarre au début */
   if(seq && (seq.d !== day || (L.fx && L.fx !== seq.skipFx) || liveOn() || s < seq.t0)) seq = null;
@@ -810,6 +843,7 @@ function learnDur(force){
   return true;
 }
 function onClipEnded(){
+  if(adActive){ endAd(); return; }
   // Fin de la vidéo : la suivante de la liste démarre aussitôt, depuis le début.
   const {day,s} = nowAbj(); clearTimeout(tuneT); onItem = null;
   const L = locate(day,s), p = plan(day);
