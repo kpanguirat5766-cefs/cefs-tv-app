@@ -303,7 +303,7 @@ footer{margin-top:48px;color:var(--muted);font-size:14px;border-top:1px solid va
       </div>
       <button class="unmute" id="unmute" type="button" hidden>🔊 Activer le son</button>
       <div class="bars" aria-hidden="true"><i style="background:var(--c-priere)"></i><i style="background:var(--c-ens)"></i><i style="background:var(--c-form)"></i><i style="background:var(--c-culte)"></i><i style="background:var(--c-jeun)"></i><i style="background:var(--c-radio)"></i></div>
-      <div class="lower" id="lower"><div class="tag">EN DIRECT</div><div class="txt"><b id="lT">CEFS TV</b><small id="lH"></small></div></div>
+      <div class="lower" id="lower"><div class="tag" id="lTag">EN DIRECT</div><div class="txt"><b id="lT">CEFS TV</b><small id="lH"></small></div></div>
     </div>
     <aside class="side">
       <div class="onair"><span class="dot" id="dot"></span><span id="nowLbl">À l'antenne</span></div>
@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1795508947";
+const BUILD = "1795509124";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -699,7 +699,11 @@ const liveTitle = () => (curLive() && curLive().title) || "Émission en direct";
 /* ===== Barre latérale ===== */
 function renderNow(){
   const {day,s} = nowAbj(); const L = locate(day,s);
-  if(L.cur){
+  if(typeof adActive !== "undefined" && adActive){
+    $("nowLbl").textContent = "Espace publicitaire"; $("dot").hidden=false;
+    $("nowTitle").textContent = "Les ouvrages de l'Apôtre Guirat Kpan";
+    $("nowMeta").textContent = "Le programme reprend juste après"; $("nowBar").style.width = "0";
+  } else if(L.cur){
     $("nowLbl").textContent = L.pass ? "À l'antenne · rediffusion" : "À l'antenne maintenant"; $("dot").hidden=false;
     $("nowTitle").textContent = L.cur.title;
     $("nowMeta").textContent = dot(sub(L.cur), `${fmtT(L.start)} – ${fmtT(L.end)}`);
@@ -735,7 +739,7 @@ function startAd(){
   let pos = 0, cur = ""; try{ pos = ytMain.getCurrentTime()||0; cur = ytMain.getVideoData().video_id; }catch(_){}
   if(cur === ad.yt) return;
   const p = plan(day), idx = seq && seq.d===day ? seq.idx : (L.idx!=null && L.idx>=0 ? L.idx : 0);
-  adBack = {d:day, idx, pos}; adActive = true; clearTimeout(tuneT);
+  adBack = {d:day, idx, pos}; adActive = true; clearTimeout(tuneT); $("lTag").textContent = "PUB"; renderNow();
   try{ ytMain.pauseVideo(); }catch(_){}
   bumper("Espace publicitaire", "Les ouvrages de l'Apôtre Guirat Kpan", 5000);
   setTimeout(()=>{ if(!adActive) return;
@@ -744,7 +748,7 @@ function startAd(){
   adSafety = setTimeout(endAd, 8*60*1000);           // sécurité : jamais plus de 8 minutes
 }
 function endAd(){
-  if(!adActive) return; adActive = false; clearTimeout(adSafety);
+  if(!adActive) return; adActive = false; clearTimeout(adSafety); $("lTag").textContent = "EN DIRECT"; renderNow();
   const B = adBack; adBack = null;
   if(B && !liveOn()){ const {s} = nowAbj(); seq = {d:B.d, idx:B.idx, t0: s - B.pos, n:++seqN, skipFx:null}; }  // reprise là où le programme s'était arrêté
   bumper("CEFS TV", "Reprise du programme", 2500);
