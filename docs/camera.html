@@ -88,11 +88,13 @@ function goHome(){
     } else location.replace(home);
   }, 1500);
 }
+let seen = false;   // on attend d'avoir vu le direct enregistré avant de surveiller son arrêt
 /* Direct arrêté depuis un autre écran (bouton Direct de l'application) : on coupe aussi la caméra */
 setInterval(async ()=>{
   if(!live) return;
   try{ const r = await fetch(`${STATS}/get/${NS}/${encodeURIComponent(key)}`, {cache:"no-store"}); const j = await r.json();
-    if(+j.value !== v){ live = false; ended("Le direct a été arrêté. Retour à CEFS TV…"); goHome(); } }catch(_){}
+    if(+j.value === v) seen = true;
+    else if(seen){ live = false; ended("Le direct a été arrêté. Retour à CEFS TV…"); goHome(); } }catch(_){}
 }, 5000);
 // Garder l'écran allumé pendant le direct
 async function awake(){ try{ if(navigator.wakeLock) await navigator.wakeLock.request("screen"); }catch(_){} }
