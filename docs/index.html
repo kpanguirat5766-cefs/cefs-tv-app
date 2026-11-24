@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1795489300";
+const BUILD = "1795507934";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -1115,7 +1115,8 @@ async function pinHash(code){
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("cefs-tv:" + code));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
-function isUnlocked(){ try{ return !!state.pin && sessionStorage.getItem("cefs-admin") === state.pin; }catch(_){ return false; } }
+/* Le code est demandé à chaque ouverture des boutons Direct et Statistiques */
+function isUnlocked(){ return false; }
 function remember(h){ try{ sessionStorage.setItem("cefs-admin", h); }catch(_){} }
 function openPin(mode){
   pinMode = mode; $("pinErr").textContent = ""; $("pin1").value = ""; $("pin2").value = "";
