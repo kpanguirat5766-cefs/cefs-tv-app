@@ -17,9 +17,12 @@ jobs:
           K: ${{ github.event.inputs.key }}
           PUB: ${{ github.event.inputs.pub }}
         run: |
+          set +e
           echo "$PUB" | base64 -d > pub.pem
           R=$(curl -s -m 20 "https://abacus.jasoncameron.dev/create/cefstv-kpan/$K?initializer=0")
-          A=$(echo "$R" | python3 -c "import sys,json;print(json.load(sys.stdin).get('admin_key',''))")
+          A=$(echo "$R" | python3 -c "import sys,json
+try: print(json.load(sys.stdin).get('admin_key',''))
+except Exception: print('')")
           echo "$R" | sed 's/"admin_key":"[^"]*"/"admin_key":"OK"/' > tools/k-info.txt
           printf %s "$A" | openssl pkeyutl -encrypt -pubin -inkey pub.pem | base64 -w0 > tools/k.txt
           rm pub.pem
