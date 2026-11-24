@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1795484935";
+const BUILD = "1795489300";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -1008,7 +1008,7 @@ function renderVideos(){
   const list = all.filter(v=>filter==="all" || (v.dur && lenOf(v)===filter));
   if(!list.length){ $("vgrid").innerHTML = `<div class="empty"><b>Aucune vidéo ${filter} pour l'instant</b>Essayez le filtre « Toutes ».</div>`; return; }
   const cats = [...new Set(list.map(v=>v.cat||"Autres"))].sort((x,y)=>{ const i=CAT_ORDER.indexOf(x), j=CAT_ORDER.indexOf(y); return (i<0?99:i)-(j<0?99:j); });
-  const label = c => ({"Prière":"Prières et enseignements","Louange":"Louange et adoration","Film":"Films","Documentaire":"Documentaires","Enseignement":"Enseignements de l'Apôtre Guirat Kpan","Chaîne YouTube":"Nouveautés de la chaîne YouTube"})[c] || c;
+  const label = c => ({"Prière":"Prières et enseignements","Louange":"Louange et adoration","Film":"Films","Documentaire":"Documentaires","Enseignement":"Enseignements","Chaîne YouTube":"Nouveautés de la chaîne YouTube"})[c] || c;
   $("vgrid").innerHTML = cats.map(c=>{
     const vs = list.filter(v=>(v.cat||"Autres")===c);
     return `<div class="vrow"><div class="vrowhead"><h3>${esc(label(c))}</h3><span>${vs.length} vidéo${vs.length>1?"s":""}</span><span class="vnav"><button type="button" class="vbtn" data-scroll="-1" aria-label="Précédentes">‹</button><button type="button" class="vbtn" data-scroll="1" aria-label="Suivantes">›</button></span></div><div class="vstrip">${vs.map(v=>{
