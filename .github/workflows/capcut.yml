@@ -1,0 +1,57 @@
+name: Récupérer une vidéo CapCut
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        required: true
+      name:
+        required: true
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          U: ${{ github.event.inputs.url }}
+          N: ${{ github.event.inputs.name }}
+        run: |
+          set +e
+          mkdir -p work docs/media
+          UA="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36"
+          curl -sL -A "$UA" "$U" -o work/page.html -w "%{http_code} %{url_effective}\n" > work/info.txt
+          python3 - <<'PY' >> work/info.txt
+          import re, html, json
+          t = open("work/page.html", encoding="utf-8", errors="ignore").read()
+          t2 = t.replace("\\u002F", "/").replace("\\/", "/")
+          urls = []
+          for m in re.finditer(r'https?://[^"\'\s<>]+?\.mp4[^"\'\s<>]*', t2):
+              u = html.unescape(m.group(0))
+              if u not in urls: urls.append(u)
+          for m in re.finditer(r'"(?:video_url|videoUrl|play_url|playUrl|url)"\s*:\s*"(https?://[^"]+)"', t2):
+              u = html.unescape(m.group(1))
+              if u not in urls and ("video" in u or "mp4" in u or "tos" in u): urls.append(u)
+          title = re.search(r"<title>(.*?)</title>", t, re.S)
+          print("TITLE", (title.group(1).strip() if title else "")[:200])
+          print("NURLS", len(urls))
+          open("work/urls.txt","w").write("\n".join(urls))
+          for u in urls[:5]: print("URL", u[:160])
+          PY
+          ok=0
+          while read -r u; do
+            [ -z "$u" ] && continue
+            curl -sL -A "$UA" -e "https://www.capcut.com/" "$u" -o work/in.mp4
+            if ffprobe -v error -show_entries format=duration -of csv=p=0 work/in.mp4 > work/dur.txt 2>/dev/null; then ok=1; break; fi
+          done < work/urls.txt
+          echo "OK $ok" >> work/info.txt
+          if [ "$ok" = 1 ]; then
+            echo "DUR $(cat work/dur.txt)" >> work/info.txt
+            ffprobe -v error -show_entries stream=codec_type,width,height -of compact work/in.mp4 >> work/info.txt
+            ffmpeg -v error -y -i work/in.mp4 -vf "scale='min(1280,iw)':-2" -c:v libx264 -preset slow -crf 27 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart "docs/media/$N.mp4"
+            ls -la "docs/media/$N.mp4" >> work/info.txt
+            SZ=$(stat -c %s "docs/media/$N.mp4"); if [ "$SZ" -gt 95000000 ]; then rm "docs/media/$N.mp4"; echo "TROP GROS $SZ" >> work/info.txt; fi
+          fi
+          cp work/info.txt tools/capcut.txt
+          git config user.name "CEFS TV"; git config user.email "actions@users.noreply.github.com"
+          git add tools/capcut.txt docs/media; git commit -m "Vidéo CapCut" && git pull --rebase -q && git push
