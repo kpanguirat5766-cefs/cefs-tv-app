@@ -497,7 +497,7 @@ const ytt = v => (v && v.ytTitle) || "";
 const sub = it => ytt(it && it.video && vid(it.video));
 const dot = (a,b) => a && b ? a + " · " + b : (a || b);
 let liveYtTitle = "";
-const BUILD = "1794814292";
+const BUILD = "1795484935";
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const CATS = {"Prière":"--c-priere","Enseignement":"--c-ens","Formation":"--c-form","Culte":"--c-culte","Jeunesse":"--c-jeun","Radio":"--c-radio"};
 const DAY = 86400, SHORT = 600;
@@ -892,16 +892,17 @@ async function setRemoteLive(v, okMsg){
   $("liveErr").textContent = "";
   if(!state.liveKey){ $("liveErr").textContent = "Direct indisponible pour le moment."; return false; }
   ["liveStart","liveStop","camStart"].forEach(id=>$(id).disabled = true);
-  let ok = false;
+  let ok = false, noKey = false;
   try{
     const k = await liveAdminKey();
+    if(!k) noKey = true;
     if(k){ const r = await fetch(`${STATS}/set/${NS}/${encodeURIComponent(state.liveKey)}?value=${v}`, {method:"POST", headers:{Authorization:"Bearer "+k}, cache:"no-store"});
       const j = await r.json().catch(()=>({})); ok = r.ok && j && +j.value === v;
       if(!ok && j && /token/i.test(j.error||"")){ store.del("cefs-livekey"); } }
   }catch(_){}
   ["liveStart","camStart"].forEach(id=>$(id).disabled = false);
   if(ok){ applyRemote(v); toast(okMsg); if($("liveDlg").open) openLive(); }
-  else { $("liveErr").textContent = "Le direct n'a pas pu être enregistré. Vérifiez la connexion Internet et réessayez."; $("liveStop").disabled = !liveOn(); }
+  else { $("liveErr").textContent = noKey ? "Cet appareil n'a pas la clé du direct : recopiez-la depuis l'appareil qui a lancé le premier direct (elle s'affiche en bas de cette fenêtre)." : "Le direct n'a pas pu être enregistré. Vérifiez la connexion Internet et réessayez."; $("liveStop").disabled = !liveOn(); }
   return ok;
 }
 $("liveStart").addEventListener("click", ()=>{
